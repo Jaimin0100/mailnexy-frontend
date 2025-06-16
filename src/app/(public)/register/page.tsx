@@ -72,13 +72,14 @@ export default function RegisterPage() {
         },
         body: JSON.stringify({
           email,
-          passwordHash: password,
+          password,
           name: name || null,
         }),
       })
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
+        console.error('Registration error:', errorData)
         throw new Error(errorData.error || 'Registration failed')
       }
 
