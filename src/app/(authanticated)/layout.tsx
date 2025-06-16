@@ -10,8 +10,11 @@ export default function AuthenticatedLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Sidebar>
-      {children}
-    </Sidebar>
+    <div className="flex">
+      <Sidebar />
+      <main className="flex-1 pt-12">
+        {children}
+      </main>
+    </div>
   );
 }

@@ -185,7 +185,7 @@ const Sidebar: React.FC = () => {
   const menuItems: Record<string, HeaderMenuItem[]> = {
     Campaign: [
       { name: 'Dashboard', path: '/campaign/dashboard', icon: <DashboardIcon /> },
-      { name: 'All Campaigns', path: '/campaign/all', icon: <AddCampaignIcon /> },
+      { name: 'All Campaigns', path: '/campaign/all-campaign', icon: <AddCampaignIcon /> },
       { name: 'New Campaign', path: '/campaign/new', icon: <NewCampaignIcon /> },
       { name: 'Add Sender', path: '/campaign/sender', icon: <AddSendersIcon /> },
       { name: 'Unibox', path: '/campaign/unibox', icon: <UniboxIcon /> },
