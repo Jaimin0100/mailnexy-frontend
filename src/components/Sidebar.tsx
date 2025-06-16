@@ -17,7 +17,7 @@ import HelpIcon from './icons/help';
 import ContactIcon from './icons/contact';
 import DashboardIcon from './icons/Dashboard';
 import AddCampaignIcon from './icons/AddCampaign';
-import AddSendersIcon from './icons/AddSenders';
+import AddSendersIcon from './icons/AddCampaign';
 import NewCampaignIcon from './icons/NewCampaign';
 import UniboxIcon from './icons/Unibox';
 import LogoutIcon from './icons/Logout';
@@ -71,7 +71,7 @@ const Sidebar: React.FC = () => {
           throw new Error('No authentication token found');
         }
 
-        const response = await fetch('http://localhost:5000/api/protected/me', {
+        const response = await fetch('http://localhost:5000/auth/me', {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
