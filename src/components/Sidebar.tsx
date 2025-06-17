@@ -279,13 +279,13 @@ const Sidebar: React.FC = () => {
               className={`group flex items-center p-3 rounded-lg transition-all duration-200 ${isActive ? 'bg-[#5570F1]' : 'hover:bg-[#5570F1]'}`}
               prefetch={!isActive}
             >
-              <span className="min-w-[16px] flex items-center justify-center text-[12px]">
+              <span className="min-w-[16px] flex items-center justify-center">
                 {React.cloneElement(item.icon, {
-                  className: `${isActive ? 'text-white' : 'text-[#696A71] group-hover:text-white'}`,
+                  className: `${isActive ? 'text-white' : 'text-[#696A71] group-hover:text-white'}w-4 h-4`,
                 })}
               </span>
               <span
-                className={`ml-3 text-[11px] font-bold text-nowrap transition-opacity duration-300 ${isActive ? 'text-white' : 'text-[#696A71] group-hover:text-white'} ${isMobileSidebarOpen || (isSidebarHovered && window.innerWidth >= 768) ? 'opacity-100' : 'opacity-0 group-hover/sidebar:opacity-100'}`}
+                className={`ml-3 text-[11px] font-bold text-nowrap transition-opacity duration-300 ${isActive ? 'text-white' : 'text-[#696A71] group-hover:text-white'} ${isMobileSidebarOpen || (isSidebarHovered && window.innerWidth >= 768) ? 'opacity-100' : 'opacity-0 md:group-hover/sidebar:opacity-100'}`}
               >
                 {item.name}
               </span>
@@ -344,11 +344,11 @@ const Sidebar: React.FC = () => {
               height={40}
               priority
             />
-            <span
+            {/* <span
               className={`text-xl font-semibold text-[#5570F1] whitespace-nowrap transition-opacity duration-300 ${isMobileSidebarOpen || (isSidebarHovered && window.innerWidth >= 768) ? 'opacity-100' : 'opacity-0 md:group-hover/sidebar:opacity-100'}`}
             >
               MailNexy
-            </span>
+            </span> */}
           </div>
 
           <nav className="flex-grow w-full">
@@ -363,8 +363,8 @@ const Sidebar: React.FC = () => {
               className="group flex items-center p-3 rounded-lg transition-all duration-200 hover:bg-red-500/20 w-full"
               aria-label="Logout"
             >
-              <span className="min-w-[16px] flex items-center justify-center text-[12px]">
-                <LogoutIcon className="text-[#696A71] group-hover:text-red-500" />
+              <span className="min-w-[16px] flex items-center justify-center">
+                <LogoutIcon className="text-[#696A71] w-4 h-4 group-hover:text-red-500" />
               </span>
               <span
                 className={`ml-3 text-[11px] font-bold text-nowrap transition-opacity duration-300 text-red-500 group-hover:text-red-500 ${isMobileSidebarOpen || (isSidebarHovered && window.innerWidth >= 768) ? 'opacity-100' : 'opacity-0 md:group-hover/sidebar:opacity-100'}`}
