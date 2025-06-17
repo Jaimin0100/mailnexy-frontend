@@ -51,7 +51,7 @@ const EmailVerifier: React.FC = () => {
   // Function to get auth token (you might want to replace this with your actual auth token retrieval)
   const getAuthToken = useCallback(() => {
     // In a real app, you'd get this from your auth context or localStorage
-    return localStorage.getItem('authToken') || '';
+    return localStorage.getItem('access_token') || '';
   }, []);
 
   // Verify single email
