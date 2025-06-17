@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FiSend, FiX } from "react-icons/fi";
+import { toast } from "react-toastify";
 
 interface ComposeModalProps {
   onClose: () => void;

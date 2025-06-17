@@ -1,9 +1,11 @@
 import { FiStar, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
+type Email = { id: number; sender: string; subject: string; snippet: string; received_at: string; is_read: boolean; is_starred: boolean; status: string; campaign_id?: number };
+
 interface EmailListProps {
-  emails: { id: number; sender: string; subject: string; snippet: string; received_at: string; is_read: boolean; is_starred: boolean; status: string; campaign_id?: number }[];
-  selectedEmail: { id: number } | null;
-  setSelectedEmail: (email: { id: number } | null) => void;
+  emails: Email[];
+  selectedEmail: Email | null;
+  setSelectedEmail: (email: Email | null) => void;
   selectedRows: number[];
   handleRowSelect: (emailId: number) => void;
   handleSelectAll: () => void;
@@ -28,7 +30,7 @@ export default function EmailList({
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = emails.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(emails.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(emails.length / itemsPerPage));
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -94,14 +96,14 @@ export default function EmailList({
           </div>
         ))
       )}
-      {emails.length > itemsPerPage && (
+      {totalPages > 1 && (
         <div className="flex items-center justify-between p-4 border-t border-gray-200">
           <span className="text-sm text-gray-700">
             Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, emails.length)} of {emails.length} emails
           </span>
           <div className="flex gap-2">
             <button
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
               className={`p-2 rounded-md ${
                 currentPage === 1 ? "text-gray-400 cursor-not-allowed" : "text-[#53545C] hover:bg-gray-100"
@@ -121,7 +123,7 @@ export default function EmailList({
               </button>
             ))}
             <button
-              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
               className={`p-2 rounded-md ${
                 currentPage === totalPages ? "text-gray-400 cursor-not-allowed" : "text-[#53545C] hover:bg-gray-100"
