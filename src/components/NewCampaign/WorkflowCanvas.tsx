@@ -9,44 +9,28 @@ import ReactFlow, {
   OnNodesChange, 
   OnEdgesChange, 
   OnConnect, 
-  NodeTypes,
-  NodeProps,
-  EdgeProps,
+  NodeTypes 
 } from 'reactflow';
 import CustomNode from './CustomNode';
 import NodeModal from './NodeModal';
 
-// Define type for CustomNode data
-interface CustomNodeData {
-  label: string;
-  type: string;
-}
-
-// Define type for NodeModal props (adjust based on your NodeModal implementation)
-interface NodeModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  node: Node<CustomNodeData> | null;
-  onSave: (node: Node<CustomNodeData>) => void;
-}
-
 // Define initial nodes as an empty array with explicit Node type
-const initialNodes: Node<CustomNodeData>[] = [];
+const initialNodes: Node[] = [];
 
 // Define nodeTypes with proper typing for custom nodes
 const nodeTypes: NodeTypes = { custom: CustomNode };
 
-const WorkflowCanvas: React.FC = () => {
-  const [nodes, setNodes] = useState<Node<CustomNodeData>[]>(initialNodes);
+export default function WorkflowCanvas() {
+  const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>([]);
-  const [selectedNode, setSelectedNode] = useState<Node<CustomNodeData> | null>(null);
-  const [isPopupOpen, setIsPopupOpen] = useState<boolean>(true); // State to control popup visibility
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(true); // State to control popup visibility
 
-  const onDrop = (event: React.DragEvent<HTMLDivElement>): void => {
+  const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     const type = event.dataTransfer.getData('application/reactflow');
     const position = { x: event.clientX - 50, y: event.clientY - 50 };
-    const newNode: Node<CustomNodeData> = {
+    const newNode: Node = {
       id: `${type}-${Date.now()}`,
       type: 'custom',
       data: { label: type.charAt(0).toUpperCase() + type.slice(1), type },
@@ -55,19 +39,18 @@ const WorkflowCanvas: React.FC = () => {
     setNodes((nds) => nds.concat(newNode));
   };
 
-  const onNodeClick = (_event: React.MouseEvent, node: Node<CustomNodeData>): void => {
+  const onNodeClick = (_event: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
   };
 
-  const onSaveNode = (updatedNode: Node<CustomNodeData>): void => {
+  const onSaveNode = (updatedNode: Node) => {
     setNodes((nds) => nds.map((n) => (n.id === updatedNode.id ? updatedNode : n)));
   };
 
   // Handle selection from popup
-  const handleSelection = (option: 'template' | 'scratch'): void => {
+  const handleSelection = (option: 'template' | 'scratch') => {
     if (option === 'scratch') {
-      // Example: Add a default node for "Create from Scratch"
-      const newNode: Node<CustomNodeData> = {
+      const newNode: Node = {
         id: `start-${Date.now()}`,
         type: 'custom',
         data: { label: 'Start', type: 'start' },
@@ -75,8 +58,7 @@ const WorkflowCanvas: React.FC = () => {
       };
       setNodes([newNode]);
     } else if (option === 'template') {
-      // Example: Load a template (you can customize this)
-      const templateNodes: Node<CustomNodeData>[] = [
+      const templateNodes: Node[] = [
         {
           id: `template-${Date.now()}`,
           type: 'custom',
@@ -96,32 +78,51 @@ const WorkflowCanvas: React.FC = () => {
       onDragOver={(e: React.DragEvent<HTMLDivElement>) => e.preventDefault()}
     >
       {isPopupOpen && nodes.length === 0 ? (
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg flex space-x-8">
-            <button
-              onClick={() => handleSelection('template')}
-              className="text-center focus:outline-none hover:scale-105 transition-transform"
-            >
-              <div className="mb-4">
-                <svg className="w-16 h-16 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        <div className="absolute inset-0 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
+            {/* Header with Title and Close Button */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-800">Create Campaign</h2>
+              <button
+                onClick={() => setIsPopupOpen(false)}
+                className="text-red-500 hover:text-red-700 focus:outline-none"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-800">Use a template</h3>
-              <p className="text-sm text-gray-500">Personalize the framework to reflect your style</p>
-            </button>
-            <button
-              onClick={() => handleSelection('scratch')}
-              className="text-center focus:outline-none hover:scale-105 transition-transform"
-            >
-              <div className="mb-4">
-                <svg className="w-16 h-16 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-medium text-gray-800">Create from Scratch</h3>
-              <p className="text-sm text-gray-500">Follow a simple step process to build a new drip campaign</p>
-            </button>
+              </button>
+            </div>
+            {/* Options */}
+            <div className="flex justify-between space-x-6">
+              <button
+                onClick={() => handleSelection('template')}
+                className="text-center focus:outline-none hover:scale-105 transition-transform flex-1"
+              >
+                <div className="mb-4">
+                  <img
+                    src="/useatemplate.png"
+                    alt="Use a template"
+                    className="w-16 h-16 mx-auto"
+                  />
+                </div>
+                <h3 className="text-lg font-medium text-gray-800">Use a template</h3>
+                <p className="text-sm text-gray-500">Personalize the framework to reflect your style</p>
+              </button>
+              <button
+                onClick={() => handleSelection('scratch')}
+                className="text-center focus:outline-none hover:scale-105 transition-transform flex-1"
+              >
+                <div className="mb-4">
+                  <img
+                    src="/createfromscretch.png"
+                    alt="Create from Scratch"
+                    className="w-16 h-16 mx-auto"
+                  />
+                </div>
+                <h3 className="text-lg font-medium text-gray-800">Create from Scratch</h3>
+                <p className="text-sm text-gray-500">Follow a simple step process to build a new drip campaign</p>
+              </button>
+            </div>
           </div>
         </div>
       ) : (
@@ -129,7 +130,7 @@ const WorkflowCanvas: React.FC = () => {
           nodes={nodes}
           edges={edges}
           onNodesChange={(changes: OnNodesChange) => setNodes((nds) =>
-            changes.reduce((acc: Node<CustomNodeData>[], change) => {
+            changes.reduce((acc: Node[], change) => {
               const node = acc.find((n) => n.id === change.id);
               if (!node) return acc;
               return [...acc.filter((n) => n.id !== change.id), { ...node, ...change }];
@@ -158,11 +159,7 @@ const WorkflowCanvas: React.FC = () => {
       />
     </div>
   );
-};
-
-export default WorkflowCanvas;
-
-
+}
 
 
 

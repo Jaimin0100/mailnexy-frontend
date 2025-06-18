@@ -2,14 +2,14 @@
 
 import { useState } from 'react';
 import Stepper from '@/components/NewCampaign/Stepper';
-// import NodeSidebar from './components/NodeSidebar';
-// import WorkflowCanvas from './components/WorkflowCanvas';
-
+import NodeSidebar from '@/components/NewCampaign/NodeSidebar';
+import WorkflowCanvas from '@/components/NewCampaign/WorkflowCanvas';
+// 
 export default function CreateCampaignPage() {
   const [currentStep, setCurrentStep] = useState(1);
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] flex flex-col">
+    <div className="min-h-screen pt-4 bg-[#F5F7FA] flex flex-col">
       {/* Header with Stepper */}
       <header className="bg-white p-4 border-b border-gray-200 flex justify-center">
         <Stepper currentStep={currentStep} setCurrentStep={setCurrentStep} />
@@ -21,10 +21,10 @@ export default function CreateCampaignPage() {
         {currentStep === 1 && (
           <div className="flex relative">
             <div className="flex-1">
-              {/* <WorkflowCanvas /> */}
+              <WorkflowCanvas />
             </div>
             <div className="ml-4">
-              {/* <NodeSidebar /> */}
+              <NodeSidebar />
             </div>
           </div>
         )}
