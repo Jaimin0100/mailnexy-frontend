@@ -1,11 +1,20 @@
-'use client';
+"use client";
 
-import Modal from 'react-modal';
-import { useForm } from 'react-hook-form';
-import { Node } from 'reactflow';
-import { FaEnvelope, FaPlus, FaBold, FaItalic, FaUnderline, FaFilter, FaClock, FaFlag } from 'react-icons/fa';
+import Modal from "react-modal";
+import { useForm } from "react-hook-form";
+import { Node } from "reactflow";
+import {
+  FaEnvelope,
+  FaFilter,
+  FaClock,
+  FaFlag,
+} from "react-icons/fa";
+import EmailNode from "./EmailNode";
+import ConditionNode from "./ConditionNode";
+import DelayNode from "./DelayNode";
+import GoalNode from "./GoalNode";
 
-Modal.setAppElement('body');
+Modal.setAppElement("body");
 
 interface NodeModalProps {
   isOpen: boolean;
@@ -34,108 +43,14 @@ export default function NodeModal({ isOpen, onClose, node, onSave }: NodeModalPr
 
   const renderModalContent = () => {
     switch (node?.data.type) {
-      case 'email':
-        return (
-          <>
-            <label className="text-sm text-blue-600 font-medium uppercase">Subject</label>
-            <div className="relative mt-2">
-              <input
-                {...register('subject')}
-                placeholder="Write Subject of your mail..."
-                className="w-full border border-gray-300 text-black rounded-lg p-2 pr-24 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-2">
-                <button type="button" className="text-blue-600 text-sm flex items-center space-x-1 hover:underline">
-                  <span>Personalize</span>
-                </button>
-                <button type="button" className="text-blue-600 text-sm flex items-center space-x-1 hover:underline">
-                  <span>Spin</span>
-                </button>
-              </div>
-            </div>
-            <div className="mt-4">
-              <label className="text-sm text-blue-600 font-medium uppercase">Body</label>
-              <div className="mt-2">
-                <div className="flex space-x-2 p-2 border border-gray-300 rounded-t-lg bg-gray-50">
-                  <button type="button" className="text-gray-600 hover:bg-gray-200 p-1 rounded">
-                    <FaPlus className="w-4 h-4" />
-                  </button>
-                  <button type="button" className="text-gray-600 hover:bg-gray-200 p-1 rounded">
-                    <FaBold className="w-4 h-4" />
-                  </button>
-                  <button type="button" className="text-gray-600 hover:bg-gray-200 p-1 rounded">
-                    <FaItalic className="w-4 h-4" />
-                  </button>
-                  <button type="button" className="text-gray-600 hover:bg-gray-200 p-1 rounded">
-                    <FaUnderline className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="relative">
-                  <textarea
-                    {...register('body')}
-                    placeholder="Enter a description..."
-                    className="w-full text-black border border-gray-300 rounded-b-lg rounded-t-none p-3 h-40 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
-                  />
-                  <div className="absolute right-2 bottom-4 flex space-x-2">
-                    <button type="button" className="text-blue-600 text-sm flex items-center space-x-1 hover:underline">
-                      <span>Personalize</span>
-                    </button>
-                    <button type="button" className="text-blue-600 text-sm flex items-center space-x-1 hover:underline">
-                      <span>Spin</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </>
-        );
-      case 'condition':
-        return (
-          <>
-            <div className="bg-green-100 p-2 rounded mb-2">
-              <label className="text-sm text-green-600 font-medium">Opened Email</label>
-              <div className="mt-2">
-                <select {...register('waitingTime')} className="w-full border border-gray-300 rounded-lg p-2">
-                  <option value="+ 2 days">+ 2 days</option>
-                </select>
-                <p className="text-sm text-gray-500 mt-1">Set a timer for the recipient to open the email...</p>
-              </div>
-            </div>
-            <div className="bg-green-100 p-2 rounded">
-              <label className="text-sm text-green-600 font-medium">Clicked Link</label>
-              <div className="mt-2">
-                <select {...register('waitingTime')} className="w-full border border-gray-300 rounded-lg p-2">
-                  <option value="+ 2 days">+ 2 days</option>
-                </select>
-                <p className="text-sm text-gray-500 mt-1">Set a timer for the recipient to click the link...</p>
-              </div>
-            </div>
-          </>
-        );
-      case 'delay':
-        return (
-          <div className="bg-yellow-100 p-2 rounded">
-            <label className="text-sm text-yellow-600 font-medium">Delay After Opened Email</label>
-            <div className="mt-2">
-              <select {...register('waitingTime')} className="w-full border border-gray-300 rounded-lg p-2">
-                <option value="+ 2 days">+ 2 days</option>
-              </select>
-              <p className="text-sm text-gray-500 mt-1">Set a timer for the recipient to open the email...</p>
-            </div>
-          </div>
-        );
-      case 'goal':
-        return (
-          <div className="bg-red-100 p-2 rounded">
-            <label className="text-sm text-red-600 font-medium">Set a Goal</label>
-            <div className="mt-2">
-              <select {...register('waitingTime')} className="w-full border border-gray-300 rounded-lg p-2">
-                <option value="+ 2 days">+ 2 days</option>
-              </select>
-              <p className="text-sm text-gray-500 mt-1">Set a timer for the recipient to open the email...</p>
-            </div>
-          </div>
-        );
+      case "email":
+        return <EmailNode />;
+      case "condition":
+        return <ConditionNode />;
+      case "delay":
+        return <DelayNode />;
+      case "goal":
+        return <GoalNode />;
       default:
         return null;
     }
@@ -148,17 +63,36 @@ export default function NodeModal({ isOpen, onClose, node, onSave }: NodeModalPr
       className="p-6 bg-white rounded-lg shadow-lg max-w-lg mx-auto mt-20 z-[1000]"
       overlayClassName="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-start z-[999]"
     >
-      <div className="flex justify-between items-center mb-4 bg-blue-100 rounded-t-lg p-3">
+      <div className="flex justify-between items-center mb-4 bg-gray-100 rounded-t-lg p-3">
         <div className="flex items-center space-x-2">
-          {node?.data.type === 'email' && <FaEnvelope className="text-blue-500 w-5 h-5" />}
-          {node?.data.type === 'condition' && <FaFilter className="text-green-500 w-5 h-5" />}
-          {node?.data.type === 'delay' && <FaClock className="text-yellow-500 w-5 h-5" />}
-          {node?.data.type === 'goal' && <FaFlag className="text-red-500 w-5 h-5" />}
+          {node?.data.type === "email" && (
+            <FaEnvelope className="text-blue-500 w-5 h-5" />
+          )}
+          {node?.data.type === "condition" && (
+            <FaFilter className="text-green-500 w-5 h-5" />
+          )}
+          {node?.data.type === "delay" && (
+            <FaClock className="text-yellow-500 w-5 h-5" />
+          )}
+          {node?.data.type === "goal" && <FaFlag className="text-red-500 w-5 h-5" />}
           <h2 className="text-base font-medium text-gray-800">{node?.data.label}</h2>
         </div>
-        <button onClick={onClose} className="text-red-500 hover:text-red-700">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        <button
+          onClick={onClose}
+          className="text-red-500 hover:text-red-700"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>
@@ -172,7 +106,10 @@ export default function NodeModal({ isOpen, onClose, node, onSave }: NodeModalPr
           >
             <span>Preview & Test</span>
           </button>
-          <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600">
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+          >
             Save
           </button>
         </div>
@@ -180,6 +117,194 @@ export default function NodeModal({ isOpen, onClose, node, onSave }: NodeModalPr
     </Modal>
   );
 }
+
+
+
+
+
+
+// 'use client';
+
+// import Modal from 'react-modal';
+// import { useForm } from 'react-hook-form';
+// import { Node } from 'reactflow';
+// import { FaEnvelope, FaPlus, FaBold, FaItalic, FaUnderline, FaFilter, FaClock, FaFlag } from 'react-icons/fa';
+
+// Modal.setAppElement('body');
+
+// interface NodeModalProps {
+//   isOpen: boolean;
+//   onClose: () => void;
+//   node: Node | null;
+//   onSave: (updatedNode: Node) => void;
+// }
+
+// interface FormData {
+//   subject?: string;
+//   body?: string;
+//   waitingTime?: string;
+// }
+
+// export default function NodeModal({ isOpen, onClose, node, onSave }: NodeModalProps) {
+//   const { register, handleSubmit } = useForm<FormData>({
+//     defaultValues: node?.data || {},
+//   });
+
+//   const onSubmit = (data: FormData) => {
+//     if (node) {
+//       onSave({ ...node, data: { ...node.data, ...data } });
+//     }
+//     onClose();
+//   };
+
+//   const renderModalContent = () => {
+//     switch (node?.data.type) {
+//       case 'email':
+//         return (
+//           <>
+//             <label className="text-sm text-blue-600 font-medium uppercase">Subject</label>
+//             <div className="relative mt-2">
+//               <input
+//                 {...register('subject')}
+//                 placeholder="Write Subject of your mail..."
+//                 className="w-full border border-gray-300 text-black rounded-lg p-2 pr-24 focus:outline-none focus:ring-2 focus:ring-blue-500"
+//               />
+//               <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-2">
+//                 <button type="button" className="text-blue-600 text-sm flex items-center space-x-1 hover:underline">
+//                   <span>Personalize</span>
+//                 </button>
+//                 <button type="button" className="text-blue-600 text-sm flex items-center space-x-1 hover:underline">
+//                   <span>Spin</span>
+//                 </button>
+//               </div>
+//             </div>
+//             <div className="mt-4">
+//               <label className="text-sm text-blue-600 font-medium uppercase">Body</label>
+//               <div className="mt-2">
+//                 <div className="flex space-x-2 p-2 border border-gray-300 rounded-t-lg bg-gray-50">
+//                   <button type="button" className="text-gray-600 hover:bg-gray-200 p-1 rounded">
+//                     <FaPlus className="w-4 h-4" />
+//                   </button>
+//                   <button type="button" className="text-gray-600 hover:bg-gray-200 p-1 rounded">
+//                     <FaBold className="w-4 h-4" />
+//                   </button>
+//                   <button type="button" className="text-gray-600 hover:bg-gray-200 p-1 rounded">
+//                     <FaItalic className="w-4 h-4" />
+//                   </button>
+//                   <button type="button" className="text-gray-600 hover:bg-gray-200 p-1 rounded">
+//                     <FaUnderline className="w-4 h-4" />
+//                   </button>
+//                 </div>
+//                 <div className="relative">
+//                   <textarea
+//                     {...register('body')}
+//                     placeholder="Enter a description..."
+//                     className="w-full text-black border border-gray-300 rounded-b-lg rounded-t-none p-3 h-40 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+//                   />
+//                   <div className="absolute right-2 bottom-4 flex space-x-2">
+//                     <button type="button" className="text-blue-600 text-sm flex items-center space-x-1 hover:underline">
+//                       <span>Personalize</span>
+//                     </button>
+//                     <button type="button" className="text-blue-600 text-sm flex items-center space-x-1 hover:underline">
+//                       <span>Spin</span>
+//                     </button>
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//           </>
+//         );
+//       case 'condition':
+//         return (
+//           <>
+//             <div className="bg-green-100 p-2 rounded mb-2">
+//               <label className="text-sm text-green-600 font-medium">Opened Email</label>
+//               <div className="mt-2">
+//                 <select {...register('waitingTime')} className="w-full border border-gray-300 rounded-lg p-2">
+//                   <option value="+ 2 days">+ 2 days</option>
+//                 </select>
+//                 <p className="text-sm text-gray-500 mt-1">Set a timer for the recipient to open the email...</p>
+//               </div>
+//             </div>
+//             <div className="bg-green-100 p-2 rounded">
+//               <label className="text-sm text-green-600 font-medium">Clicked Link</label>
+//               <div className="mt-2">
+//                 <select {...register('waitingTime')} className="w-full border border-gray-300 rounded-lg p-2">
+//                   <option value="+ 2 days">+ 2 days</option>
+//                 </select>
+//                 <p className="text-sm text-gray-500 mt-1">Set a timer for the recipient to click the link...</p>
+//               </div>
+//             </div>
+//           </>
+//         );
+//       case 'delay':
+//         return (
+//           <div className="bg-yellow-100 p-2 rounded">
+//             <label className="text-sm text-yellow-600 font-medium">Delay After Opened Email</label>
+//             <div className="mt-2">
+//               <select {...register('waitingTime')} className="w-full border border-gray-300 rounded-lg p-2">
+//                 <option value="+ 2 days">+ 2 days</option>
+//               </select>
+//               <p className="text-sm text-gray-500 mt-1">Set a timer for the recipient to open the email...</p>
+//             </div>
+//           </div>
+//         );
+//       case 'goal':
+//         return (
+//           <div className="bg-red-100 p-2 rounded">
+//             <label className="text-sm text-red-600 font-medium">Set a Goal</label>
+//             <div className="mt-2">
+//               <select {...register('waitingTime')} className="w-full border border-gray-300 rounded-lg p-2">
+//                 <option value="+ 2 days">+ 2 days</option>
+//               </select>
+//               <p className="text-sm text-gray-500 mt-1">Set a timer for the recipient to open the email...</p>
+//             </div>
+//           </div>
+//         );
+//       default:
+//         return null;
+//     }
+//   };
+
+//   return (
+//     <Modal
+//       isOpen={isOpen}
+//       onRequestClose={onClose}
+//       className="p-6 bg-white rounded-lg shadow-lg max-w-lg mx-auto mt-20 z-[1000]"
+//       overlayClassName="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-start z-[999]"
+//     >
+//       <div className="flex justify-between items-center mb-4 bg-blue-100 rounded-t-lg p-3">
+//         <div className="flex items-center space-x-2">
+//           {node?.data.type === 'email' && <FaEnvelope className="text-blue-500 w-5 h-5" />}
+//           {node?.data.type === 'condition' && <FaFilter className="text-green-500 w-5 h-5" />}
+//           {node?.data.type === 'delay' && <FaClock className="text-yellow-500 w-5 h-5" />}
+//           {node?.data.type === 'goal' && <FaFlag className="text-red-500 w-5 h-5" />}
+//           <h2 className="text-base font-medium text-gray-800">{node?.data.label}</h2>
+//         </div>
+//         <button onClick={onClose} className="text-red-500 hover:text-red-700">
+//           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+//             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+//           </svg>
+//         </button>
+//       </div>
+//       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+//         {renderModalContent()}
+//         <div className="flex justify-end space-x-3 mt-4">
+//           <button
+//             type="button"
+//             onClick={onClose}
+//             className="px-4 py-2 bg-gray-200 text-gray-700 rounded-full flex items-center space-x-2 hover:bg-gray-300"
+//           >
+//             <span>Preview & Test</span>
+//           </button>
+//           <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600">
+//             Save
+//           </button>
+//         </div>
+//       </form>
+//     </Modal>
+//   );
+// }
 
 
 

@@ -148,10 +148,11 @@ export default function AllCampaign() {
   return (
     <div className="p-6 pt-8 bg-gray-50 min-h-screen font-sans">
       {/* Header Section */}
-        <div className="text-[24px] font-semibold text-[#53545C]">
-          <h1>ALL CAMPAIGN</h1>
+        {/* <div className="text-[#53545C] space -x-2">
+          <div className="text-[20px] font-semibold ">
+          <h1>ALL CAMPAIGN</h1></div>
           <p>Add and Manage your multiple Campaign</p>
-        </div>
+        </div> */}
       <div className="flex justify-between items-center mb-8 flex-wrap gap-4">
         <button 
           onClick={handleCreateCampaign}

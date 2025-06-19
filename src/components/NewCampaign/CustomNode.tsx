@@ -6,6 +6,7 @@ import { Handle, Position, NodeProps } from 'reactflow';
 interface CustomNodeData {
   label: string;
   type: string;
+  content?: string;
 }
 
 const iconMap = {
@@ -16,52 +17,40 @@ const iconMap = {
   goal: <FaFlag className="text-red-500 w-5 h-5" />,
 };
 
-const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, id }) => {
+const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data }) => {
   const isStartNode = data.type === 'start';
   const isConditionNode = data.type === 'condition';
-  const isGoalNode = data.type === 'goal';
 
   return (
     <div
-      className={`rounded-lg shadow-md p-2 flex items-center space-x-2 ${
-        isStartNode ? 'bg-[#34C759] text-white' : isGoalNode ? 'bg-red-100' : 'bg-white text-gray-800'
+      className={`rounded-lg shadow-md p-3 flex items-center space-x-2 ${
+        isStartNode ? 'bg-[#34C759] text-white' : 'bg-white text-gray-800 border border-gray-200'
       }`}
+      style={{ minWidth: '200px', minHeight: '60px', padding: '10px', borderRadius: '10px' }}
     >
-      <Handle type="target" position={Position.Top} style={{ background: '#555' }} />
-      {iconMap[data.type] || null}
-      <span className="text-sm">{data.label}</span>
-      {isConditionNode ? (
+      <Handle type="target" position={Position.Top} style={{ background: '#555', width: 10, height: 10 }} />
+      {iconMap[data.type] && <div className="mr-2">{iconMap[data.type]}</div>}
+      <div className="flex-1 text-center">
+        <span className="text-sm font-medium">{data.label}</span>
+        {data.type === 'email' && !data.content && <p className="text-xs text-gray-500 mt-1">Add Email Content Here</p>}
+        {data.content && <p className="text-xs text-gray-500 mt-1">{data.content}</p>}
+        {data.type === 'delay' && data.content && <p className="text-xs text-gray-500 mt-1">{data.content}</p>}
+        {data.type === 'goal' && data.content && <p className="text-xs text-gray-500 mt-1">{data.content}</p>}
+      </div>
+      <Handle type="source" position={Position.Bottom} style={{ background: '#555', width: 10, height: 10 }} />
+      {isConditionNode && (
         <>
-          <Handle type="source" position={Position.Bottom} id="yes" style={{ background: '#555', top: '25%' }} />
-          <span className="absolute left-[-20px] top-1/4 transform -translate-y-1/2 text-green-500 text-xs">YES</span>
-          <Handle type="source" position={Position.Bottom} id="no" style={{ background: '#555', top: '75%' }} />
-          <span className="absolute left-[-20px] bottom-1/4 transform translate-y-1/2 text-red-500 text-xs">NO</span>
+          <Handle type="source" position={Position.Left} id="no" style={{ top: '50%', background: '#FF0000', width: 10, height: 10 }} />
+          <span className="absolute left-[-35px] top-1/2 transform -translate-y-1/2 text-red-500 text-xs">NO</span>
+          <Handle type="source" position={Position.Right} id="yes" style={{ top: '50%', background: '#00FF00', width: 10, height: 10 }} />
+          <span className="absolute right-[-35px] top-1/2 transform -translate-y-1/2 text-green-500 text-xs">YES</span>
         </>
-      ) : (
-        <Handle type="source" position={Position.Bottom} style={{ background: '#555' }} />
       )}
     </div>
   );
 };
 
 export default CustomNode;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
