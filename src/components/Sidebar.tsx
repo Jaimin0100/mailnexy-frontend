@@ -296,22 +296,69 @@ const Sidebar: React.FC = () => {
     </ul>
   ), [isMobileSidebarOpen, isSidebarHovered, pathname]);
 
+  // const renderHeaderMenu = () => {
+  //   switch (activeItem) {
+  //     case 'Campaign':
+  //       return campaignMenuItems;
+  //     case 'CRM':
+  //       return crmMenuItems;
+  //     case 'Lead Database':
+  //       return leadsMenuItems;
+  //     case 'Email Verifier':
+  //       return emailVerifierMenuItems;
+  //     case 'Settings':
+  //       return settingsMenuItems;
+  //     default:
+  //       return [];
+  //   }
+  // };
+
   const renderHeaderMenu = () => {
-    switch (activeItem) {
-      case 'Campaign':
-        return campaignMenuItems;
-      case 'CRM':
-        return crmMenuItems;
-      case 'Lead Database':
-        return leadsMenuItems;
-      case 'Email Verifier':
-        return emailVerifierMenuItems;
-      case 'Settings':
-        return settingsMenuItems;
-      default:
-        return [];
-    }
+    const headerItems = (() => {
+      switch (activeItem) {
+        case 'Campaign': return campaignMenuItems;
+        case 'CRM': return crmMenuItems;
+        case 'Lead Database': return leadsMenuItems;
+        case 'Email Verifier': return emailVerifierMenuItems;
+        case 'Settings': return settingsMenuItems;
+        default: return [];
+      }
+    })();
+
+    return (
+      <div className="flex items-center space-x-8 overflow-x-auto scrollbar-hide">
+        {headerItems.map((item) => {
+          const isActive = pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              href={item.path}
+              className={`group flex flex-col items-center px-2 py-3 transition-all duration-200 whitespace-nowrap relative`}
+              prefetch={!isActive}
+            >
+              <div className="flex items-center space-x-2">
+                <span className="flex items-center justify-center text-[12px]">
+                  {React.cloneElement(item.icon, {
+                    className: `${isActive ? 'text-[#5570F1]' : 'text-[#696A71] group-hover:text-[#5570F1]'} w-4 h-4`,
+                  })}
+                </span>
+                <span
+                  className={`text-[10px] sm:text-[11px] font-bold ${isActive ? 'text-[#5570F1]' : 'text-[#696A71] group-hover:text-[#5570F1]'}`}
+                >
+                  {item.name}
+                </span>
+              </div>
+              {isActive && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#5570F1] rounded-t-full" />
+              )}
+            </Link>
+          );
+        })}
+      </div>
+    );
   };
+
+
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -381,7 +428,7 @@ const Sidebar: React.FC = () => {
         className={`fixed top-0 left-0 right-0 bg-white border-b border-gray-200 p-3 z-40 flex items-center justify-between max-w-full transition-all duration-300 ${isMobileSidebarOpen ? 'left-44' : 'left-0 md:left-16'}`}
       >
         <div className="flex items-center space-x-2 sm:space-x-4 max-w-[calc(100%-120px)] overflow-x-auto scrollbar-hide">
-          {renderHeaderMenu().map((item) => {
+          {/* {renderHeaderMenu().map((item) => {
             const isActive = pathname === item.path;
             return (
               <Link
@@ -402,7 +449,9 @@ const Sidebar: React.FC = () => {
                 </span>
               </Link>
             );
-          })}
+          })} */}
+
+           {renderHeaderMenu()}
         </div>
 
         <div className="flex items-center space-x-2 sm:space-x-4 min-w-[100px] pr-2 sm:pr-4">
