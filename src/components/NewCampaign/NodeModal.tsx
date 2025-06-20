@@ -1,20 +1,14 @@
-"use client";
+'use client';
 
-import Modal from "react-modal";
-import { useForm } from "react-hook-form";
-import { Node } from "reactflow";
-import {
-  FaEnvelope,
-  FaFilter,
-  FaClock,
-  FaFlag,
-} from "react-icons/fa";
-import EmailNode from "./EmailNode";
-import ConditionNode from "./ConditionNode";
-import DelayNode from "./DelayNode";
-import GoalNode from "./GoalNode";
+import Modal from 'react-modal';
+import { useForm, FormProvider } from 'react-hook-form';
+import { Node } from 'reactflow';
+import EmailNode from './EmailNode';
+import ConditionNode from './ConditionNode';
+import DelayNode from './DelayNode';
+import GoalNode from './GoalNode';
 
-Modal.setAppElement("body");
+// Modal.setAppElement('#__next');
 
 interface NodeModalProps {
   isOpen: boolean;
@@ -23,33 +17,29 @@ interface NodeModalProps {
   onSave: (updatedNode: Node) => void;
 }
 
-interface FormData {
-  subject?: string;
-  body?: string;
-  waitingTime?: string;
-}
-
 export default function NodeModal({ isOpen, onClose, node, onSave }: NodeModalProps) {
-  const { register, handleSubmit } = useForm<FormData>({
+  const methods = useForm({
     defaultValues: node?.data || {},
   });
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = (data: any) => {
     if (node) {
       onSave({ ...node, data: { ...node.data, ...data } });
     }
     onClose();
   };
 
-  const renderModalContent = () => {
-    switch (node?.data.type) {
-      case "email":
+  const renderNodeForm = () => {
+    if (!node) return null;
+
+    switch (node.data.type) {
+      case 'email':
         return <EmailNode />;
-      case "condition":
+      case 'condition':
         return <ConditionNode />;
-      case "delay":
+      case 'delay':
         return <DelayNode />;
-      case "goal":
+      case 'goal':
         return <GoalNode />;
       default:
         return null;
@@ -60,63 +50,186 @@ export default function NodeModal({ isOpen, onClose, node, onSave }: NodeModalPr
     <Modal
       isOpen={isOpen}
       onRequestClose={onClose}
-      className="p-6 bg-white rounded-lg shadow-lg max-w-lg mx-auto mt-20 z-[1000]"
+      className="p-6 bg-white rounded-lg shadow-lg max-w-md mx-auto mt-20 z-[1000]"
       overlayClassName="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-start z-[999]"
     >
-      <div className="flex justify-between items-center mb-4 bg-gray-100 rounded-t-lg p-3">
-        <div className="flex items-center space-x-2">
-          {node?.data.type === "email" && (
-            <FaEnvelope className="text-blue-500 w-5 h-5" />
-          )}
-          {node?.data.type === "condition" && (
-            <FaFilter className="text-green-500 w-5 h-5" />
-          )}
-          {node?.data.type === "delay" && (
-            <FaClock className="text-yellow-500 w-5 h-5" />
-          )}
-          {node?.data.type === "goal" && <FaFlag className="text-red-500 w-5 h-5" />}
-          <h2 className="text-base font-medium text-gray-800">{node?.data.label}</h2>
-        </div>
-        <button
-          onClick={onClose}
-          className="text-red-500 hover:text-red-700"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </div>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        {renderModalContent()}
-        <div className="flex justify-end space-x-3 mt-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-full flex items-center space-x-2 hover:bg-gray-300"
-          >
-            <span>Preview & Test</span>
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
-          >
-            Save
-          </button>
-        </div>
-      </form>
+      <FormProvider {...methods}>
+        <form onSubmit={methods.handleSubmit(onSubmit)}>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Configure {node?.data.label || 'Node'}
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Node Label
+              </label>
+              <input
+                {...methods.register('label')}
+                className="w-full border border-gray-300 rounded-lg p-2"
+              />
+            </div>
+
+            {renderNodeForm()}
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      </FormProvider>
     </Modal>
   );
 }
+
+
+
+
+
+
+
+
+
+
+// "use client";
+
+// import Modal from "react-modal";
+// import { useForm } from "react-hook-form";
+// import { Node } from "reactflow";
+// import {
+//   FaEnvelope,
+//   FaFilter,
+//   FaClock,
+//   FaFlag,
+// } from "react-icons/fa";
+// import EmailNode from "./EmailNode";
+// import ConditionNode from "./ConditionNode";
+// import DelayNode from "./DelayNode";
+// import GoalNode from "./GoalNode";
+
+// Modal.setAppElement("body");
+
+// interface NodeModalProps {
+//   isOpen: boolean;
+//   onClose: () => void;
+//   node: Node | null;
+//   onSave: (updatedNode: Node) => void;
+// }
+
+// interface FormData {
+//   subject?: string;
+//   body?: string;
+//   waitingTime?: string;
+// }
+
+// export default function NodeModal({ isOpen, onClose, node, onSave }: NodeModalProps) {
+//   const { register, handleSubmit } = useForm<FormData>({
+//     defaultValues: node?.data || {},
+//   });
+
+//   const onSubmit = (data: FormData) => {
+//     if (node) {
+//       onSave({ ...node, data: { ...node.data, ...data } });
+//     }
+//     onClose();
+//   };
+
+//   const renderModalContent = () => {
+//     switch (node?.data.type) {
+//       case "email":
+//         return <EmailNode />;
+//       case "condition":
+//         return <ConditionNode />;
+//       case "delay":
+//         return <DelayNode />;
+//       case "goal":
+//         return <GoalNode />;
+//       default:
+//         return null;
+//     }
+//   };
+
+//   return (
+//     <Modal
+//       isOpen={isOpen}
+//       onRequestClose={onClose}
+//       className="p-6 bg-white rounded-lg shadow-lg max-w-lg mx-auto mt-20 z-[1000]"
+//       overlayClassName="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-start z-[999]"
+//     >
+//       <div className="flex justify-between items-center mb-4 bg-gray-100 rounded-t-lg p-3">
+//         <div className="flex items-center space-x-2">
+//           {node?.data.type === "email" && (
+//             <FaEnvelope className="text-blue-500 w-5 h-5" />
+//           )}
+//           {node?.data.type === "condition" && (
+//             <FaFilter className="text-green-500 w-5 h-5" />
+//           )}
+//           {node?.data.type === "delay" && (
+//             <FaClock className="text-yellow-500 w-5 h-5" />
+//           )}
+//           {node?.data.type === "goal" && <FaFlag className="text-red-500 w-5 h-5" />}
+//           <h2 className="text-base font-medium text-gray-800">{node?.data.label}</h2>
+//         </div>
+//         <button
+//           onClick={onClose}
+//           className="text-red-500 hover:text-red-700"
+//         >
+//           <svg
+//             className="w-5 h-5"
+//             fill="none"
+//             stroke="currentColor"
+//             viewBox="0 0 24 24"
+//           >
+//             <path
+//               strokeLinecap="round"
+//               strokeLinejoin="round"
+//               strokeWidth={2}
+//               d="M6 18L18 6M6 6l12 12"
+//             />
+//           </svg>
+//         </button>
+//       </div>
+//       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+//         {renderModalContent()}
+//         <div className="flex justify-end space-x-3 mt-4">
+//           <button
+//             type="button"
+//             onClick={onClose}
+//             className="px-4 py-2 bg-gray-200 text-gray-700 rounded-full flex items-center space-x-2 hover:bg-gray-300"
+//           >
+//             <span>Preview & Test</span>
+//           </button>
+//           <button
+//             type="submit"
+//             className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+//           >
+//             Save
+//           </button>
+//         </div>
+//       </form>
+//     </Modal>
+//   );
+// }
 
 
 
