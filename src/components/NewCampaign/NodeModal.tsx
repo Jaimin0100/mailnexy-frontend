@@ -7,6 +7,7 @@ import EmailNode from './EmailNode';
 import ConditionNode from './ConditionNode';
 import DelayNode from './DelayNode';
 import GoalNode from './GoalNode';
+import ABTestNode from './ABTestNode';
 
 // Modal.setAppElement('#__next');
 
@@ -41,6 +42,8 @@ export default function NodeModal({ isOpen, onClose, node, onSave }: NodeModalPr
         return <DelayNode />;
       case 'goal':
         return <GoalNode />;
+      case 'abtest':
+        return <ABTestNode />;
       default:
         return null;
     }

@@ -63,13 +63,13 @@ const WorkflowCanvas = () => {
       );
       if (exists) return eds;
       return addEdge(
-        { 
-          ...params, 
+        {
+          ...params,
           markerEnd: {
             type: MarkerType.ArrowClosed,
           },
-          animated: true 
-        }, 
+          animated: true
+        },
         eds
       );
     }),
@@ -154,6 +154,23 @@ const WorkflowCanvas = () => {
 
         case 'goal':
           log.push('🎯 Goal Reached!');
+          return;
+        case 'abTest':
+          const splitPercentage = node.data.splitPercentage || 50;
+          log.push(`🔀 A/B Test: ${splitPercentage}% Variant A, ${100 - splitPercentage}% Variant B`);
+
+          const variantA = getNextByHandle(node.id, 'variantA');
+          const variantB = getNextByHandle(node.id, 'variantB');
+
+          // Randomly choose a variant based on the split percentage
+          const random = Math.random() * 100;
+          if (random < splitPercentage && variantA.length) {
+            log.push(`↳ Using Variant A (${splitPercentage}%)`);
+            variantA.forEach(dfs);
+          } else if (variantB.length) {
+            log.push(`↳ Using Variant B (${100 - splitPercentage}%)`);
+            variantB.forEach(dfs);
+          }
           return;
 
         default:

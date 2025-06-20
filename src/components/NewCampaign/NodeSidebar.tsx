@@ -1,6 +1,6 @@
 "use client";
 
-import { FaEnvelope, FaFilter, FaClock, FaFlag } from "react-icons/fa";
+import { FaEnvelope, FaFilter, FaClock, FaFlag, FaCodeBranch } from "react-icons/fa";
 
 export default function NodeSidebar() {
   const onDragStart = (event: React.DragEvent, nodeType: string) => {
@@ -56,6 +56,18 @@ export default function NodeSidebar() {
             <FaFlag className="text-red-500 w-4 h-4" />
           </div>
           <span className="text-xs text-gray-700 mt-1">Goal</span>
+        </div>
+      </div>
+      <div
+        draggable
+        onDragStart={(e) => onDragStart(e, "abTest")}
+        className="p-2 cursor-pointer bg-white w-18 border border-gray-300 rounded-lg"
+      >
+        <div className="flex flex-col items-center">
+          <div className="bg-purple-100 rounded-full p-2">
+            <FaCodeBranch className="text-purple-500 w-4 h-4" />
+          </div>
+          <span className="text-xs text-gray-700 mt-1">A/B Test</span>
         </div>
       </div>
     </div>
