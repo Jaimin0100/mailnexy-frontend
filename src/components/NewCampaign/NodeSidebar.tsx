@@ -17,7 +17,7 @@ export default function NodeSidebar() {
       >
         <div className="flex flex-col items-center">
           <div className="bg-blue-100 rounded-full p-2">
-            <FaEnvelope className="text-blue-500 w-6 h-6" />
+            <FaEnvelope className="text-blue-500 w-4 h-4" />
           </div>
           <span className="text-xs text-gray-700 mt-1">Email</span>
         </div>
@@ -29,7 +29,7 @@ export default function NodeSidebar() {
       >
         <div className="flex flex-col items-center">
           <div className="bg-green-100 rounded-full p-2">
-            <FaFilter className="text-green-500 w-6 h-6" />
+            <FaFilter className="text-green-500 w-4 h-4" />
           </div>
           <span className="text-xs text-gray-700 mt-1">Condition</span>
         </div>
@@ -41,7 +41,7 @@ export default function NodeSidebar() {
       >
         <div className="flex flex-col items-center">
           <div className="bg-yellow-100 rounded-full p-2">
-            <FaClock className="text-yellow-500 w-6 h-6" />
+            <FaClock className="text-yellow-500 w-4 h-4" />
           </div>
           <span className="text-xs text-gray-700 mt-1">Delay</span>
         </div>
@@ -53,7 +53,7 @@ export default function NodeSidebar() {
       >
         <div className="flex flex-col items-center">
           <div className="bg-red-100 rounded-full p-2">
-            <FaFlag className="text-red-500 w-6 h-6" />
+            <FaFlag className="text-red-500 w-4 h-4" />
           </div>
           <span className="text-xs text-gray-700 mt-1">Goal</span>
         </div>
