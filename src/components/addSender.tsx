@@ -121,7 +121,7 @@ const AddSender: React.FC<AddSenderProps> = ({ onClose }) => {
         throw new Error("Authentication token not found");
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/protected/senders`, {
+      const response = await fetch(`http://localhost:5000/api/v1/senders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

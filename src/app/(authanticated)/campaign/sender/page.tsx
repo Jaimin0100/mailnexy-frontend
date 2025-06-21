@@ -97,7 +97,7 @@ export default function Sender() {
     setLoading(true);
     setError(null);
     try {
-      const response = await authFetch("http://localhost:5000/api/protected/senders");
+      const response = await authFetch("http://localhost:5000/api/v1/senders");
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -145,7 +145,7 @@ export default function Sender() {
 
     try {
       const response = await authFetch(
-        `http://localhost:5000/api/protected/senders/${senderId}/test`,
+        `http://localhost:5000/api/v1/senders/${senderId}/test`,
         {
           method: "POST",
         }
@@ -172,7 +172,7 @@ export default function Sender() {
 
     try {
       const response = await authFetch(
-        `http://localhost:5000/api/protected/senders/${senderId}/verify`,
+        `http://localhost:5000/api/v1/senders/${senderId}/verify`,
         {
           method: "POST",
         }
@@ -200,7 +200,7 @@ export default function Sender() {
 
     try {
       const response = await authFetch(
-        `http://localhost:5000/api/protected/senders/${senderId}`,
+        `http://localhost:5000/api/v1/senders/${senderId}`,
         {
           method: "DELETE",
         }
@@ -222,7 +222,7 @@ export default function Sender() {
   const handleStartWarmup = async (senderId: number) => {
     try {
       const response = await authFetch(
-        `http://localhost:5000/api/protected/senders/${senderId}/warmup/start`,
+        `http://localhost:5000/api/v1/senders/${senderId}/warmup/start`,
         {
           method: "POST",
         }
@@ -243,7 +243,7 @@ export default function Sender() {
   const handleStopWarmup = async (senderId: number) => {
     try {
       const response = await authFetch(
-        `http://localhost:5000/api/protected/senders/${senderId}/warmup/stop`,
+        `http://localhost:5000/api/v1/senders/${senderId}/warmup/stop`,
         {
           method: "POST",
         }

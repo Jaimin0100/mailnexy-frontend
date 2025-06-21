@@ -65,7 +65,7 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected }) => 
       iconColor: 'text-yellow-500',
       bgColor: 'bg-white',
       borderColor: 'border-gray-200',
-      textText: 'text-gray-800',
+      textColor: 'text-gray-800',
       subjectColor: 'text-amber-500',
       borderWidth: 'border',
       borderRadius: 'rounded-md',
