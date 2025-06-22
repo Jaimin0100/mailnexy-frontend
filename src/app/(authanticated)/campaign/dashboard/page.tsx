@@ -31,10 +31,11 @@ type StatData = {
 };
 
 type Stats = {
-  totalEmailSent: StatData;
-  openRate: StatData;
-  clickRate: StatData;
-  replyRate: StatData;
+  totalEmailSent: number;
+  openRate: number;
+  clickRate: number;
+  replyRate: number;
+  bounceRate: number;
 };
 
 type Metrics = {
@@ -147,10 +148,11 @@ function Card({ title, icon, total, percentage, timeFrame, setTimeFrame, chartDa
 export default function DashboardPage() {
   const [timeFrame, setTimeFrame] = useState<TimeFrame>('Week');
   const [stats, setStats] = useState<Stats>({
-    totalEmailSent: {},
-    openRate: {},
-    clickRate: {},
-    replyRate: {},
+    totalEmailSent: 0,
+    openRate: 0,
+    clickRate: 0,
+    replyRate: 0,
+    bounceRate: 0,
   });
   const [metrics, setMetrics] = useState<Metrics>({ labels: [], datasets: [] });
   const [statusBreakdown, setStatusBreakdown] = useState<StatusBreakdown>({
@@ -166,56 +168,143 @@ export default function DashboardPage() {
     ],
   });
   const [recentCampaigns, setRecentCampaigns] = useState<RecentCampaign[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     setIsLoading(true);
+  //     try {
+  //       // Fetch stats
+  //       const statsResponse = await fetch('http://localhost:5000/api/v1/dashboard/stats', {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+  //         },
+  //       });
+  //       if (!statsResponse.ok) throw new Error('Failed to fetch stats');
+  //       const statsData = await statsResponse.json();
+  //       setStats({
+  //         totalEmailSent: statsData.total_email_sent || statsData.totalEmailSent || 0,
+  //         openRate: statsData.open_rate || statsData.openRate || 0,
+  //         clickRate: statsData.click_rate || statsData.clickRate || 0,
+  //         replyRate: statsData.reply_rate || statsData.replyRate || 0,
+  //         bounceRate: statsData.bounce_rate || statsData.bounceRate || 0,
+  //       });
+
+  //       // Fetch metrics and status breakdown
+  //       const metricsResponse = await fetch('http://localhost:5000/api/v1/dashboard/metrics', {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+  //         },
+  //       });
+  //       if (!metricsResponse.ok) throw new Error('Failed to fetch metrics');
+  //       const metricsData = await metricsResponse.json();
+  //       setMetrics(metricsData.metrics|| { labels: [], datasets: [] });
+  //       // Update statusBreakdown only if data is available, otherwise keep default
+  //       if (metricsData.statusBreakdown && metricsData.statusBreakdown.datasets[0].data.some((val: number) => val > 0)) {
+  //         setStatusBreakdown(metricsData.statusBreakdown);
+  //       }
+
+  //       // Fetch recent campaigns
+  //       const campaignsResponse = await fetch('http://localhost:5000/api/v1/dashboard/recent-campaigns', {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+  //         },
+  //       });
+  //       if (!campaignsResponse.ok) throw new Error('Failed to fetch recent campaigns');
+  //       const campaignsData = await campaignsResponse.json();
+  //       setRecentCampaigns(campaignsData.recentCampaigns);
+  //     } catch (error) {
+  //       console.error('Error fetching dashboard data:', error);
+  //     }
+  //   };
+  //   fetchData();
+  // }, []);
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       try {
         // Fetch stats
-        const statsResponse = await fetch('http://localhost:5000/api/v1/dashboard/stats', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
+        let statsData = { total_email_sent: 0, open_rate: 0, click_rate: 0, reply_rate: 0, bounce_rate: 0 };
+        try {
+          const statsResponse = await fetch('http://localhost:5000/api/v1/dashboard/stats', {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+            },
+          });
+          if (!statsResponse.ok) {
+            console.error('Stats API response status:', statsResponse.status, statsResponse.statusText);
+            throw new Error('Failed to fetch stats');
+          }
+          statsData = await statsResponse.json();
+          console.log('Stats API response:', statsData);
+        } catch (error) {
+          console.error('Error fetching stats:', error);
+        }
+        setStats({
+          totalEmailSent: statsData.total_email_sent || statsData.totalEmailSent || 0,
+          openRate: statsData.open_rate || statsData.open_rate || 0,
+          clickRate: statsData.click_rate || statsData.clickRate || 0,
+          replyRate: statsData.reply_rate || statsData.replyRate || 0,
+          bounceRate: statsData.bounce_rate || statsData.bounceRate || 0,
         });
-        if (!statsResponse.ok) throw new Error('Failed to fetch stats');
-        const statsData = await statsResponse.json();
-        setStats(statsData);
 
         // Fetch metrics and status breakdown
-        const metricsResponse = await fetch('http://localhost:5000/api/v1/dashboard/metrics', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        if (!metricsResponse.ok) throw new Error('Failed to fetch metrics');
-        const metricsData = await metricsResponse.json();
-        setMetrics(metricsData.metrics);
-        // Update statusBreakdown only if data is available, otherwise keep default
+        let metricsData = { metrics: { labels: [], datasets: [] }, statusBreakdown: null };
+        try {
+          const metricsResponse = await fetch('http://localhost:5000/api/v1/dashboard/metrics', {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+            },
+          });
+          if (!metricsResponse.ok) {
+            console.error('Metrics API response status:', metricsResponse.status, metricsResponse.statusText);
+            throw new Error('Failed to fetch metrics');
+          }
+          metricsData = await metricsResponse.json();
+          console.log('Metrics API response:', metricsData);
+        } catch (error) {
+          console.error('Error fetching metrics:', error);
+        }
+        setMetrics(metricsData.metrics || { labels: [], datasets: [] });
         if (metricsData.statusBreakdown && metricsData.statusBreakdown.datasets[0].data.some((val: number) => val > 0)) {
           setStatusBreakdown(metricsData.statusBreakdown);
         }
 
         // Fetch recent campaigns
-        const campaignsResponse = await fetch('http://localhost:5000/api/v1/dashboard/recent-campaigns', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        });
-        if (!campaignsResponse.ok) throw new Error('Failed to fetch recent campaigns');
-        const campaignsData = await campaignsResponse.json();
-        setRecentCampaigns(campaignsData.recentCampaigns);
+        let campaignsData = { recentCampaigns: [] };
+        try {
+          const campaignsResponse = await fetch('http://localhost:5000/api/v1/dashboard/recent-campaigns', {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+            },
+          });
+          if (!campaignsResponse.ok) {
+            console.error('Campaigns API response status:', campaignsResponse.status, campaignsResponse.statusText);
+            throw new Error('Failed to fetch recent campaigns');
+          }
+          campaignsData = await campaignsResponse.json();
+          console.log('Campaigns API response:', campaignsData);
+        } catch (error) {
+          console.error('Error fetching recent campaigns:', error);
+        }
+        setRecentCampaigns(campaignsData.recentCampaigns || []);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
   }, []);
 
-  const chartData = (metric: keyof Stats) => ({
-    labels: stats[metric][timeFrame]?.labels || [],
+
+  const chartData = (metric: keyof Omit<Stats, 'bounceRate'>) => ({
+    labels: [],
     datasets: [
-      {
+      { 
         label: metric,
-        data: stats[metric][timeFrame]?.data || [],
+        data: [],
         borderColor: '#10B981',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         fill: true,
@@ -309,13 +398,16 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-8 pt-10">
+      {isLoading ? (
+        <div className="text-center text-gray-600">Loading...</div>
+      ) : (
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card
             title="Total Email Sent"
             icon={icons.totalEmailSent}
-            total={stats.totalEmailSent[timeFrame]?.total || 0}
-            percentage={stats.totalEmailSent[timeFrame]?.percentage || 0}
+            total={stats.totalEmailSent}
+            percentage={0}
             timeFrame={timeFrame}
             setTimeFrame={setTimeFrame}
             chartData={chartData('totalEmailSent')}
@@ -323,8 +415,8 @@ export default function DashboardPage() {
           <Card
             title="Open Rate"
             icon={icons.openRate}
-            total={stats.openRate[timeFrame]?.total || 0}
-            percentage={stats.openRate[timeFrame]?.percentage || 0}
+            total={stats.openRate}
+            percentage={0}
             timeFrame={timeFrame}
             setTimeFrame={setTimeFrame}
             chartData={chartData('openRate')}
@@ -332,8 +424,8 @@ export default function DashboardPage() {
           <Card
             title="Click Rate"
             icon={icons.clickRate}
-            total={stats.clickRate[timeFrame]?.total || 0}
-            percentage={stats.clickRate[timeFrame]?.percentage || 0}
+            total={stats.clickRate}
+            percentage={0}
             timeFrame={timeFrame}
             setTimeFrame={setTimeFrame}
             chartData={chartData('clickRate')}
@@ -341,8 +433,8 @@ export default function DashboardPage() {
           <Card
             title="Reply Rate"
             icon={icons.replyRate}
-            total={stats.replyRate[timeFrame]?.total || 0}
-            percentage={stats.replyRate[timeFrame]?.percentage || 0}
+            total={stats.replyRate}
+            percentage={0}
             timeFrame={timeFrame}
             setTimeFrame={setTimeFrame}
             chartData={chartData('replyRate')}
@@ -353,7 +445,7 @@ export default function DashboardPage() {
           <div className="lg:col-span-2 bg-white pb-10 pt-6 pl-6 pr-6 rounded-xl border border-gray-200 relative">
             <h2 className="text-lg font-medium text-gray-800 mb-4">Email Metrics Over Time</h2>
             <div className="absolute bottom-4 left-4 flex space-x-4">
-              {metrics.datasets.map((dataset, index) => (
+              {metrics.datasets?.map((dataset, index) => (
                 <div key={index} className="flex items-center space-x-2">
                   <div
                     className="w-4 h-4 rounded"
@@ -407,6 +499,7 @@ export default function DashboardPage() {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 }

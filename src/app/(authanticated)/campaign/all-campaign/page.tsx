@@ -185,9 +185,10 @@ export default function AllCampaign() {
         setShowDeleteConfirm(false);
         setCampaignToDelete(null);
         return true;
-      } catch (err) {
-        console.error("Delete error:", err.message);
-        setError(err.message);
+      } catch (err: any) {
+        const errorMessage = err?.message || 'Failed to delete campaign';
+        console.error("Delete error:", errorMessage);
+        setError(errorMessage);
         return false;
       }
     };
@@ -251,7 +252,7 @@ export default function AllCampaign() {
         console.log("API Response:", data);
         setCampaigns(data);
         // Map the data to ensure 'id' exists
-        const mappedData = data.map(campaign => ({
+        const mappedData = data.map((campaign: { ID: any; name: any; CreatedAt: any; status: any; sent_count: any; open_count: any; click_count: any; reply_count: any; bounce_count: any; }) => ({
           id: campaign.ID, // Adjust '_id' to match your API's property
           name: campaign.name,
           created_at: campaign.CreatedAt,

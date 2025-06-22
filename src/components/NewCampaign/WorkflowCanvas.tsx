@@ -15,6 +15,8 @@ import ReactFlow, {
   Panel,
   applyNodeChanges,
   applyEdgeChanges,
+  NodeChange,
+  EdgeChange,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import CustomNode from './CustomNode';
@@ -60,23 +62,40 @@ const WorkflowCanvas = () => {
     const fetchCampaigns = async () => {
       try {
         const response = await campaignAPI.getCampaigns();
-        if (response.data.length > 0) {
+        if (response?.data?.length > 0) {
           const campaign = response.data[0];
-          setCampaignId(campaign.id);
-          setWorkflowName(campaign.name);
-          setLastSavedName(campaign.name);
+          if (!campaign) return;
           
-          const nodes = campaign.flow.nodes || initialNodes;
-          const edges = campaign.flow.edges || initialEdges;
+          setCampaignId(campaign.id || '');
+          setWorkflowName(campaign.name || 'Untitled Workflow');
+          setLastSavedName(campaign.name || 'Untitled Workflow');
+          
+          // Safely access flow data with fallbacks
+          const flowData = campaign.flow || {};
+          const nodes = Array.isArray(flowData.nodes) ? flowData.nodes : initialNodes;
+          const edges = Array.isArray(flowData.edges) ? flowData.edges : initialEdges;
           
           setNodes(nodes);
           setEdges(edges);
           setLastSavedNodes([...nodes]);
           setLastSavedEdges([...edges]);
           setLastSaved(new Date().toLocaleTimeString());
+        } else {
+          // Initialize with default nodes if no campaigns exist
+          setNodes(initialNodes);
+          setEdges(initialEdges);
+          setLastSavedNodes([...initialNodes]);
+          setLastSavedEdges([...initialEdges]);
         }
       } catch (error) {
-        console.error('Failed to load campaigns', error);
+        console.error('Failed to load campaigns:', error);
+        // Initialize with default nodes on error
+        setNodes(initialNodes);
+        setEdges(initialEdges);
+        setLastSavedNodes([...initialNodes]);
+        setLastSavedEdges([...initialEdges]);
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -170,7 +189,7 @@ const WorkflowCanvas = () => {
 
   // Track changes for auto-save
   const handleNodesChange = useCallback(
-    (changes) => {
+    (changes: NodeChange[]) => {
       setNodes((nds) => {
         const newNodes = applyNodeChanges(changes, nds);
         return newNodes;
@@ -180,7 +199,7 @@ const WorkflowCanvas = () => {
   );
 
   const handleEdgesChange = useCallback(
-    (changes) => {
+    (changes: EdgeChange[]) => {
       setEdges((eds) => {
         const newEdges = applyEdgeChanges(changes, eds);
         return newEdges;
