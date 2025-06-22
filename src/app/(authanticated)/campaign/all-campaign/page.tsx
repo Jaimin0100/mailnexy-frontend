@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -22,9 +22,175 @@ export default function AllCampaign() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [campaignToDelete, setCampaignToDelete] = useState<number | null>(null);
 
   // Function to calculate percentage for the progress circle
   const getPercentage = (value: number, max: number) => (value / max) * 100;
+
+  const DropdownMenu = ({ campaign, onAction }: { campaign: Campaign, onAction: (action: string) => void }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+  
+    // Close dropdown when clicking outside
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+          setIsOpen(false);
+        }
+      };
+  
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }, []);
+  
+    return (
+      <div className="relative" ref={dropdownRef}>
+        <button 
+          onClick={() => setIsOpen(!isOpen)}
+          className="text-gray-400 hover:text-gray-600 transition-colors duration-300"
+        >
+          ⋮
+        </button>
+        
+        {isOpen && (
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border border-gray-200">
+            <div className="py-1">
+              {campaign.status === 'draft' && (
+                <button
+                  onClick={() => {
+                    onAction('start');
+                    setIsOpen(false);
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Start Campaign
+                </button>
+              )}
+              
+              {campaign.status === 'sending' && (
+                <button
+                  onClick={() => {
+                    onAction('stop');
+                    setIsOpen(false);
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Stop Campaign
+                </button>
+              )}
+              
+              {campaign.status === 'paused' && (
+                <button
+                  onClick={() => {
+                    onAction('start');
+                    setIsOpen(false);
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Resume Campaign
+                </button>
+              )}
+              
+              <button
+                onClick={() => {
+                  onAction('edit');
+                  setIsOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                Edit Campaign
+              </button>
+              
+              <button
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("Delete clicked for campaign:", campaign.id);
+                setCampaignToDelete(campaign.id);
+                setShowDeleteConfirm(true);
+                setIsOpen(false);
+              }}
+              className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+            >
+              Delete Campaign
+            </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+
+   // NEW: Centralized API call function with token refresh
+   const fetchWithTokenRefresh = async (url: string, options: RequestInit) => {
+    let token = localStorage.getItem("access_token");
+    let refreshToken = localStorage.getItem("refresh_token");
+    
+    // First attempt with current token
+    let response = await fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // Token expired - try refresh
+    if (response.status === 401 && refreshToken) {
+      const refreshResponse = await fetch("http://localhost:5000/auth/refresh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
+
+      if (refreshResponse.ok) {
+        const { access_token, refresh_token } = await refreshResponse.json();
+        localStorage.setItem("access_token", access_token);
+        localStorage.setItem("refresh_token", refresh_token);
+        
+        // Retry with new token
+        response = await fetch(url, {
+          ...options,
+          headers: {
+            ...options.headers,
+            Authorization: `Bearer ${access_token}`,
+          },
+        });
+      } else {
+        // Refresh failed - redirect to login
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        router.push("/login");
+        throw new Error("Session expired. Please login again.");
+      }
+    }
+    
+    return response;
+  };
+
+    // UPDATED: Delete campaign function
+    const handleDeleteCampaign = async (campaignId: number) => {
+      try {
+        console.log("Deleting campaign ID:", campaignId);
+        const response = await fetchWithTokenRefresh(
+          `http://localhost:5000/api/v1/campaigns/${campaignId}`,
+          { method: "DELETE" }
+        );
+        console.log("Response status:", response.status);
+        if (!response.ok) throw new Error("Failed to delete campaign");
+        setCampaigns(campaigns.filter(c => c.id !== campaignId));
+        setShowDeleteConfirm(false);
+        setCampaignToDelete(null);
+        return true;
+      } catch (err) {
+        console.error("Delete error:", err.message);
+        setError(err.message);
+        return false;
+      }
+    };
 
   useEffect(() => {
     const fetchCampaigns = async () => {
@@ -144,6 +310,75 @@ export default function AllCampaign() {
       </div>
     );
   }
+
+  const handleCampaignAction = async (campaignId: number, action: string) => {
+    try {
+      console.log("Action:", action, "Campaign ID:", campaignId);
+      // Add validation for campaignId
+      if (!campaignId || isNaN(campaignId)) {
+        console.error("Invalid campaign ID:", campaignId);
+        throw new Error("Invalid campaign ID");
+      }
+  
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+  
+      let url = `http://localhost:5000/api/v1/campaigns/${campaignId}`;
+      let method = "GET";
+  
+      switch (action) {
+        case 'start':
+          url += '/start';
+          method = 'POST';
+          break;
+        case 'stop':
+          url += '/stop';
+          method = 'POST';
+          break;
+        case 'edit':
+          router.push(`/campaigns/edit/${campaignId}`);
+          return;
+        case 'delete':
+          method = 'DELETE';
+          break;
+        default:
+          return;
+      }
+  
+      console.log(`Making ${method} request to ${url}`); // Debug log
+  
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to ${action} campaign`);
+      }
+  
+      // Refresh the campaigns list after successful action
+      if (action === 'delete') {
+        setCampaigns(campaigns.filter(c => c.id !== campaignId));
+      } else if (action === 'start' || action === 'stop') {
+        setCampaigns(campaigns.map(c => 
+          c.id === campaignId 
+            ? { ...c, status: action === 'start' ? 'sending' : 'paused' } 
+            : c
+        ));
+      }
+    } catch (err: any) {
+      console.error(`Error ${action}ing campaign:`, err.message);
+      setError(err.message);
+      // Optionally show a toast notification here
+    }
+  };
 
   return (
     <div className="p-6 pt-8 bg-gray-50 min-h-screen font-sans">
@@ -336,9 +571,10 @@ export default function AllCampaign() {
                       </div>
                     </td>
                     <td className="p-5">
-                      <button className="text-gray-400 hover:text-gray-600 transition-colors duration-300">
-                        ⋮
-                      </button>
+                      <DropdownMenu 
+                        campaign={campaign} 
+                        onAction={(action) => handleCampaignAction(campaign.id, action)} 
+                      />
                     </td>
                   </tr>
                 ))}
@@ -347,6 +583,34 @@ export default function AllCampaign() {
           </div>
         )}
       </div>
+        {showDeleteConfirm && (
+          console.log("Dialog shown, campaignToDelete:", campaignToDelete),
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg max-w-md">
+              <h3 className="text-lg font-semibold mb-4 text-black">Confirm Delete</h3>
+              <p className="mb-4 text-black">Are you sure you want to delete this campaign?</p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-4 py-2 border border-gray-300 rounded text-black"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    console.log("Confirm delete, campaignToDelete:", campaignToDelete);
+                    if (campaignToDelete) {
+                      await handleDeleteCampaign(campaignToDelete);
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 }
