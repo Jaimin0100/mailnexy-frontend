@@ -192,17 +192,92 @@ export default function AllCampaign() {
       }
     };
 
+  // useEffect(() => {
+  //   const fetchCampaigns = async () => {
+  //     try {
+  //       const token = localStorage.getItem("access_token");
+  //       const refreshToken = localStorage.getItem("refresh_token");
+
+  //       if (!token) {
+  //         router.push("/login");
+  //         return;
+  //       }
+
+  //       let response = await fetch("http://localhost:5000/api/v1/campaigns", {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       });
+
+  //       // If token expired, try to refresh it
+  //       if (response.status === 401) {
+  //         if (!refreshToken) {
+  //           throw new Error("Session expired. Please login again.");
+  //         }
+
+  //         const refreshResponse = await fetch("http://localhost:5000/auth/refresh", {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //           },
+  //           body: JSON.stringify({ refresh_token: refreshToken }),
+  //         });
+
+  //         if (!refreshResponse.ok) {
+  //           throw new Error("Session expired. Please login again.");
+  //         }
+
+  //         const { access_token, refresh_token } = await refreshResponse.json();
+  //         localStorage.setItem("access_token", access_token);
+  //         localStorage.setItem("refresh_token", refresh_token);
+
+  //         // Retry with new token
+  //         response = await fetch("http://localhost:5000/api/v1/campaigns", {
+  //           method: "GET",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //             Authorization: `Bearer ${access_token}`,
+  //           },
+  //         });
+  //       }
+
+  //       if (!response.ok) {
+  //         throw new Error("Failed to fetch campaigns");
+  //       }
+
+  //       const data = await response.json();
+  //       setCampaigns(data);
+  //     } catch (err: any) {
+  //       console.error("Error fetching campaigns:", err.message);
+  //       setError(err.message);
+        
+  //       // Only redirect if it's an auth error
+  //       if (err.message.includes("Session expired") || err.message.includes("Unauthorized")) {
+  //         localStorage.removeItem("token");
+  //         localStorage.removeItem("refresh_token");
+  //         router.push("/login");
+  //       }
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchCampaigns();
+  // }, [router]);
+
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
         const token = localStorage.getItem("access_token");
         const refreshToken = localStorage.getItem("refresh_token");
-
+  
         if (!token) {
           router.push("/login");
           return;
         }
-
+  
         let response = await fetch("http://localhost:5000/api/v1/campaigns", {
           method: "GET",
           headers: {
@@ -210,13 +285,13 @@ export default function AllCampaign() {
             Authorization: `Bearer ${token}`,
           },
         });
-
-        // If token expired, try to refresh it
+  
+        // Token refresh logic remains the same
         if (response.status === 401) {
           if (!refreshToken) {
             throw new Error("Session expired. Please login again.");
           }
-
+  
           const refreshResponse = await fetch("http://localhost:5000/auth/refresh", {
             method: "POST",
             headers: {
@@ -224,16 +299,15 @@ export default function AllCampaign() {
             },
             body: JSON.stringify({ refresh_token: refreshToken }),
           });
-
+  
           if (!refreshResponse.ok) {
             throw new Error("Session expired. Please login again.");
           }
-
+  
           const { access_token, refresh_token } = await refreshResponse.json();
           localStorage.setItem("access_token", access_token);
           localStorage.setItem("refresh_token", refresh_token);
-
-          // Retry with new token
+  
           response = await fetch("http://localhost:5000/api/v1/campaigns", {
             method: "GET",
             headers: {
@@ -243,17 +317,31 @@ export default function AllCampaign() {
           });
         }
 
+  
         if (!response.ok) {
           throw new Error("Failed to fetch campaigns");
         }
-
+  
         const data = await response.json();
+        console.log("API Response:", data);
         setCampaigns(data);
+        // Map the data to ensure 'id' exists
+        const mappedData = data.map(campaign => ({
+          id: campaign.ID, // Adjust '_id' to match your API's property
+          name: campaign.name,
+          created_at: campaign.CreatedAt,
+          status: campaign.status,
+          sent_count: campaign.sent_count,
+          open_count: campaign.open_count,
+          click_count: campaign.click_count,
+          reply_count: campaign.reply_count,
+          bounce_count: campaign.bounce_count,
+          interested_count: 0,
+        }));
+        setCampaigns(mappedData);
       } catch (err: any) {
         console.error("Error fetching campaigns:", err.message);
         setError(err.message);
-        
-        // Only redirect if it's an auth error
         if (err.message.includes("Session expired") || err.message.includes("Unauthorized")) {
           localStorage.removeItem("token");
           localStorage.removeItem("refresh_token");
@@ -263,7 +351,7 @@ export default function AllCampaign() {
         setLoading(false);
       }
     };
-
+  
     fetchCampaigns();
   }, [router]);
 
@@ -571,10 +659,10 @@ export default function AllCampaign() {
                       </div>
                     </td>
                     <td className="p-5">
-                      <DropdownMenu 
-                        campaign={campaign} 
-                        onAction={(action) => handleCampaignAction(campaign.id, action)} 
-                      />
+                        <DropdownMenu 
+                          campaign={campaign} 
+                          onAction={(action) => handleCampaignAction(campaign.id, action)} 
+                        />
                     </td>
                   </tr>
                 ))}
@@ -585,14 +673,14 @@ export default function AllCampaign() {
       </div>
         {showDeleteConfirm && (
           console.log("Dialog shown, campaignToDelete:", campaignToDelete),
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg max-w-md">
+          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg max-w-md shadow-lg">
               <h3 className="text-lg font-semibold mb-4 text-black">Confirm Delete</h3>
               <p className="mb-4 text-black">Are you sure you want to delete this campaign?</p>
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="px-4 py-2 border border-gray-300 rounded text-black"
+                  className="px-4 py-2 border border-gray-300 rounded text-black hover:bg-gray-100"
                 >
                   Cancel
                 </button>
@@ -603,7 +691,7 @@ export default function AllCampaign() {
                       await handleDeleteCampaign(campaignToDelete);
                     }
                   }}
-                  className="px-4 py-2 bg-red-600 text-white rounded"
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                 >
                   Delete
                 </button>
