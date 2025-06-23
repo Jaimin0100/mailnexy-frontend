@@ -24,7 +24,14 @@ export const campaignAPI = {
   getCampaigns: () => api.get('/campaigns'),
   getCampaign: (id: string) => api.get(`/campaigns/${id}`),
   updateCampaign: (id: string, data: any) => api.put(`/campaigns/${id}`, data),
-  updateCampaignFlow: (id: string, data: any) => api.put(`/campaigns/${id}/flow`, data),
+  updateCampaignFlow: (id: string, data: any) => api.put(`/campaigns/${id}/flow`,{
+    ...data,
+    // Ensure flow is properly structured for update
+    flow: {
+      nodes: data.nodes,
+      edges: data.edges
+    }
+  }),
   startCampaign: (id: string) => api.post(`/campaigns/${id}/start`),
   stopCampaign: (id: string) => api.post(`/campaigns/${id}/stop`),
   getCampaignStats: (id: string) => api.get(`/campaigns/${id}/stats`),

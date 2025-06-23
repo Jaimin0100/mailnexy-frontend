@@ -1,17 +1,102 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect  } from "react";
 import Stepper from "@/components/NewCampaign/Stepper";
 import WorkflowCanvas from "@/components/NewCampaign/WorkflowCanvas";
 import NodeSidebar from "@/components/NewCampaign/NodeSidebar";
 import SendingOptions from "@/components/NewCampaign/SendingOptions";
 import ProspectsStep from "@/components/NewCampaign/ProspectsStep";
+import NewCampaignPopup from "@/components/NewCampaign/NewCampaignPopup";
+import CampaignNamePopup from "@/components/NewCampaign/CampaignNamePopup";
+import OpenCampaignPopup from "@/components/NewCampaign/OpenCampaignPopup";
+import { campaignAPI } from "@/utils/api";
 
 export default function CreateCampaignPage() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [showPopup, setShowPopup] = useState(true);
+  const [popupMode, setPopupMode] = useState<"main" | "create" | "open" | null>(null);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [selectedCampaign, setSelectedCampaign] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+    // Fetch campaigns when opening existing
+    useEffect(() => {
+      if (popupMode === "open" && campaigns.length === 0) {
+        fetchCampaigns();
+      }
+    }, [popupMode]);
+  
+    const fetchCampaigns = async () => {
+      setIsLoading(true);
+      try {
+        const response = await campaignAPI.getCampaigns();
+        setCampaigns(response.data || []);
+      } catch (error) {
+        console.error("Failed to fetch campaigns", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    const handleCreateCampaign = async (name: string) => {
+      try {
+        const response = await campaignAPI.createCampaign({
+          name,
+          status: "draft",
+          flow: {
+            nodes: [
+              {
+                id: "1",
+                type: "custom",
+                position: { x: 250, y: 5 },
+                data: { label: "Start", type: "start" },
+              }
+            ],
+            edges: []
+          },
+        });
+        setSelectedCampaign(response.data);
+        setShowPopup(false);
+      } catch (error) {
+        console.error("Failed to create campaign", error);
+      }
+    };
 
   return (
     <div className="min-h-screen pt-4 bg-[#F5F7FA] flex flex-col">
+
+            {/* Popup Modals */}
+            {showPopup && popupMode === null && (
+        <NewCampaignPopup 
+          onSelect={(option) => setPopupMode(option)} 
+          onClose={() => setShowPopup(false)} 
+        />
+      )}
+      
+      {showPopup && popupMode === "create" && (
+        <CampaignNamePopup 
+          onCreate={handleCreateCampaign}
+          onBack={() => setPopupMode(null)}
+          onClose={() => setShowPopup(false)}
+        />
+      )}
+      
+      {showPopup && popupMode === "open" && (
+        <OpenCampaignPopup 
+          campaigns={campaigns}
+          isLoading={isLoading}
+          onSelect={(campaign) => {
+            setSelectedCampaign(campaign);
+            setShowPopup(false);
+          }}
+          onBack={() => setPopupMode(null)}
+          onClose={() => setShowPopup(false)}
+        />
+      )}
+
+      {/* Main Content (only shown when campaign is selected) */}
+      {selectedCampaign && (
+        <>
       {/* Header with Stepper */}
       <header className="bg-white p-4 border-b border-gray-200 flex justify-center">
         <Stepper currentStep={currentStep} setCurrentStep={setCurrentStep} />
@@ -23,7 +108,7 @@ export default function CreateCampaignPage() {
         {currentStep === 1 && (
           <div className="flex relative">
             <div className="flex-1">
-              <WorkflowCanvas />
+              <WorkflowCanvas campaignId={selectedCampaign.id} />
             </div>
             <div className="ml-4">
               <NodeSidebar />
@@ -87,6 +172,8 @@ export default function CreateCampaignPage() {
           )}
         </div>
       </footer>
+      </>
+      )}
     </div>
   );
 }

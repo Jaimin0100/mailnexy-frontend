@@ -1,6 +1,7 @@
 'use client';
 
 import { FaEnvelope, FaFilter, FaClock, FaFlag, FaPlay, FaCodeBranch } from 'react-icons/fa';
+import { FiX } from 'react-icons/fi';
 import { Handle, Position, NodeProps } from 'reactflow';
 
 interface CustomNodeData {
@@ -10,9 +11,10 @@ interface CustomNodeData {
   body?: string;
   waitingTime?: string;
   splitPercentage?: number; // For A/B testing
+  onDelete?: (id: string) => void;
 }
 
-const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected }) => {
+const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected, id  }) => {
   // Modern, minimal node styles inspired by Snov.io
   const nodeStyles = {
     start: {
@@ -123,10 +125,21 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected }) => 
         ${currentStyle.shadow} 
         ${currentStyle.hoverShadow} 
         ${selected ? 'border-blue-500 border-2' : ''} 
-        p-3 transition-all duration-150 ease-out relative flex flex-col items-center justify-center
+        p-3 transition-all duration-150 ease-out relative flex flex-col items-center justify-center group
       `}
       style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}
     >
+       <button
+        className="absolute -right-2 -top-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-600 z-10"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (data.onDelete) {
+            data.onDelete(id);
+          }
+        }}
+      >
+        <FiX size={14} />
+      </button>
       {/* Input handle (top) - only for non-start nodes */}
       {!isStartNode && (
         <Handle 

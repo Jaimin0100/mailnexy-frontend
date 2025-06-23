@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { FiBell, FiChevronDown } from 'react-icons/fi';
-import { FaHandshake, FaTasks, FaChartBar, FaUsers, FaSearch, FaGlobe, FaEnvelope, FaEnvelopeOpen } from 'react-icons/fa';
+import { FaHandshake, FaTasks, FaChartBar, FaUsers, FaSearch, FaGlobe, FaEnvelope, FaEnvelopeOpen, FaAddressBook   } from 'react-icons/fa';
 import CRMIcon from './icons/CRMIcon';
 import CampaignIcon from './icons/Campaign';
 import LeadsIcon from './icons/database';
@@ -21,6 +21,7 @@ import NewCampaignIcon from './icons/NewCampaign';
 import UniboxIcon from './icons/Unibox';
 import LogoutIcon from './icons/Logout';
 import { FiUser, FiLock, FiKey, FiCreditCard, FiList } from 'react-icons/fi';
+
 
 interface MenuItem {
   name: string;
@@ -76,6 +77,7 @@ const Sidebar: React.FC = () => {
     { name: 'New Campaign', path: '/campaign/new-campaign', icon: <NewCampaignIcon /> },
     { name: 'Add Sender', path: '/campaign/sender', icon: <AddSendersIcon /> },
     { name: 'Unibox', path: '/campaign/unibox', icon: <UniboxIcon /> },
+    { name: 'Leads', path: '/campaign/leads', icon: <FaUsers   /> },
   ];
 
   const crmMenuItems: MenuItem[] = [
