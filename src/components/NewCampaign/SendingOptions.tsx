@@ -18,7 +18,7 @@ export default function SendingOptions() {
       </p>
 
       {/* Email Account Section */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200 mb-6">
+      <div className="bg-white p-4 rounded-xl border border-gray-200 mb-6">
         <h3 className="font-bold mb-2 text-[#53545C]">Email Account <span className="text-[#5570F1]">0/1</span></h3>
         <p className="text-[#53545C] text-sm mb-3">Use mailbox rotation for higher daily sending limit.</p>
         <button className="px-4 py-2 bg-[#5570F1] text-white rounded-lg">Choose Email Account</button>
@@ -56,7 +56,7 @@ export default function SendingOptions() {
       </div>
 
       {/* Campaign Duration Section */}
-      <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
+      <div className="bg-white p-4 rounded-lg border border-gray-200 mb-6">
         <h3 className="font-bold mb-2 text-[#53545C]">Campaign duration</h3>
         <p className="text-[#53545C] mb-3 text-sm">
           You can choose a start and/or end date for your campaign. This way, the campaign will be automatically launched and/or completed on a specific date.
@@ -82,34 +82,54 @@ export default function SendingOptions() {
       </div>
 
       {/* One-click Unsubscribe Section */}
-      <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
+      <div className="bg-white p-4 rounded-lg border border-gray-200 mb-6">
         <h3 className="font-bold mb-2 text-[#53545C]">One-click unsubscribe</h3>
         <div className="flex items-center justify-between">
           <p className="text-[#53545C] text-sm">
             Comply with Google's one-click unsubscribe policy by adding an unsubscribe link to email headers. We recommend also including the unsubscribe link in the email body.
           </p>
-          <input
+          {/* <input
             type="checkbox"
             checked={oneClickUnsubscribe}
             onChange={() => setOneClickUnsubscribe(!oneClickUnsubscribe)}
             className="w-5 h-5"
-          />
+          /> */}
+          <label className="relative inline-flex items-center justify-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={oneClickUnsubscribe}
+              onChange={() => setOneClickUnsubscribe(!oneClickUnsubscribe)}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#5570F1]"></div>
+          </label>
         </div>
       </div>
 
       {/* Complete Campaign Section */}
-      <div className="bg-white p-4 rounded-lg shadow-sm">
-        <h3 className="font-medium mb-2">Complete campaign automatically</h3>
+      <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <h3 className="font-bold mb-2 text-[#53545C]">Complete campaign automatically</h3>
         <div className="flex items-center justify-between">
-          <p className="text-gray-600">
+          <p className="text-[#53545C] text-sm">
             When all recipients reach the end of the sequence, campaign will be automatically completed. Completed campaigns keep tracking statistics for the replies, bounces, opens and clicks, but you can no longer add new prospects.
           </p>
-          <input
+          
+          {/* <input
             type="checkbox"
             checked={completeCampaign}
             onChange={() => setCompleteCampaign(!completeCampaign)}
             className="w-5 h-5"
-          />
+          /> */}
+
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={completeCampaign}
+              onChange={() => setCompleteCampaign(!completeCampaign)}
+              className="sr-only peer"
+            />
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+          </label>
         </div>
       </div>
     </div>
