@@ -378,7 +378,7 @@ const Sidebar: React.FC = () => {
       </button>
 
       <div
-        className={`h-screen fixed top-0 left-0 bg-white border-r border-gray-200 transition-all duration-300 ease-in-out z-50 flex flex-col ${isMobileSidebarOpen ? 'w-44 translate-x-0' : 'w-16 md:hover:w-44 group/sidebar translate-x-[-100%] md:translate-x-0'} p-2 max-w-44 md:max-w-44`}
+        className={`h-screen fixed top-0 left-0 bg-white  border-r border-gray-200 transition-all duration-300 ease-in-out z-50 flex flex-col ${isMobileSidebarOpen ? 'w-44 translate-x-0' : 'w-16 md:hover:w-44 group/sidebar translate-x-[-100%] md:translate-x-0'} p-2 max-w-44 md:max-w-44`}
         onMouseEnter={() => setIsSidebarHovered(true)}
         onMouseLeave={() => setIsSidebarHovered(false)}
       >

@@ -21,7 +21,7 @@ export default function SendingOptions() {
       <div className="bg-white p-4 rounded-xl border border-gray-200 mb-6">
         <h3 className="font-bold mb-2 text-[#53545C]">Email Account <span className="text-[#5570F1]">0/1</span></h3>
         <p className="text-[#53545C] text-sm mb-3">Use mailbox rotation for higher daily sending limit.</p>
-        <button className="px-4 py-2 bg-[#5570F1] text-white rounded-lg">Choose Email Account</button>
+        <button className="px-4 py-2 bg-[#5570F1] text-white rounded-lg hover:bg-blue-700">Choose Email Account</button>
       </div>
 
       {/* Tracking Section */}
@@ -52,7 +52,7 @@ export default function SendingOptions() {
       <div className="bg-white p-4 rounded-lg  border border-gray-200 mb-6">
         <h3 className="font-bold mb-2 text-[#53545C]">Schedule</h3>
         <p className="text-[#53545C] mb-3 text-sm">Specify a sending window for your campaign. For higher engagement, we recommend sending during working hours.</p>
-        <button className="px-4 py-2 border border-[#5570F1] text-[#53545C] rounded-lg font-bold text-sm">Choose Schedule</button>
+        <button className="px-4 py-2 border border-[#5570F1] text-[#53545C] rounded-lg font-bold text-sm hover:bg-[#5570F1] hover:text-white">Choose Schedule</button>
       </div>
 
       {/* Campaign Duration Section */}
@@ -128,7 +128,7 @@ export default function SendingOptions() {
               onChange={() => setCompleteCampaign(!completeCampaign)}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#5570F1]"></div>
           </label>
         </div>
       </div>
