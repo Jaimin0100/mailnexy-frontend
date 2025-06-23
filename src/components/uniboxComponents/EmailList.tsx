@@ -33,7 +33,7 @@ export default function EmailList({
   const totalPages = Math.max(1, Math.ceil(emails.length / itemsPerPage));
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
       <div className="p-4 border-b border-gray-200 flex items-center gap-2">
         <input
           type="checkbox"

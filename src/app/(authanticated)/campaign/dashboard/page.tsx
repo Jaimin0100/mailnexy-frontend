@@ -170,55 +170,6 @@ export default function DashboardPage() {
   const [recentCampaigns, setRecentCampaigns] = useState<RecentCampaign[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     setIsLoading(true);
-  //     try {
-  //       // Fetch stats
-  //       const statsResponse = await fetch('http://localhost:5000/api/v1/dashboard/stats', {
-  //         headers: {
-  //           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-  //         },
-  //       });
-  //       if (!statsResponse.ok) throw new Error('Failed to fetch stats');
-  //       const statsData = await statsResponse.json();
-  //       setStats({
-  //         totalEmailSent: statsData.total_email_sent || statsData.totalEmailSent || 0,
-  //         openRate: statsData.open_rate || statsData.openRate || 0,
-  //         clickRate: statsData.click_rate || statsData.clickRate || 0,
-  //         replyRate: statsData.reply_rate || statsData.replyRate || 0,
-  //         bounceRate: statsData.bounce_rate || statsData.bounceRate || 0,
-  //       });
-
-  //       // Fetch metrics and status breakdown
-  //       const metricsResponse = await fetch('http://localhost:5000/api/v1/dashboard/metrics', {
-  //         headers: {
-  //           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-  //         },
-  //       });
-  //       if (!metricsResponse.ok) throw new Error('Failed to fetch metrics');
-  //       const metricsData = await metricsResponse.json();
-  //       setMetrics(metricsData.metrics|| { labels: [], datasets: [] });
-  //       // Update statusBreakdown only if data is available, otherwise keep default
-  //       if (metricsData.statusBreakdown && metricsData.statusBreakdown.datasets[0].data.some((val: number) => val > 0)) {
-  //         setStatusBreakdown(metricsData.statusBreakdown);
-  //       }
-
-  //       // Fetch recent campaigns
-  //       const campaignsResponse = await fetch('http://localhost:5000/api/v1/dashboard/recent-campaigns', {
-  //         headers: {
-  //           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-  //         },
-  //       });
-  //       if (!campaignsResponse.ok) throw new Error('Failed to fetch recent campaigns');
-  //       const campaignsData = await campaignsResponse.json();
-  //       setRecentCampaigns(campaignsData.recentCampaigns);
-  //     } catch (error) {
-  //       console.error('Error fetching dashboard data:', error);
-  //     }
-  //   };
-  //   fetchData();
-  // }, []);
 
   useEffect(() => {
     const fetchData = async () => {

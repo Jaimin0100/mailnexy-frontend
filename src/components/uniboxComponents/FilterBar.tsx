@@ -21,7 +21,7 @@ export default function FilterBar({ filters, handleFilterChange, selectedRows, h
   ];
 
   return (
-    <div className="flex justify-between items-center mb-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 relative">
+    <div className="flex justify-between items-center mb-4 bg-white p-4 rounded-xl border border-gray-200 relative">
       <div className="flex gap-2">
         <button
           onClick={() => handleFilterChange({ status: "inbox" })}

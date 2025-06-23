@@ -188,7 +188,8 @@ const Sidebar: React.FC = () => {
     };
 
     if (pathname.startsWith('/campaign')) {
-      setActiveItem('Campaign');
+      const basePath = '/' + pathname.split('/')[1];
+      setActiveItem(pathToItemMap[basePath] || 'Campaign');
     } else if (pathname.startsWith('/profile')) {
       setActiveItem('Settings');
     } else {
@@ -271,7 +272,8 @@ const Sidebar: React.FC = () => {
   const renderMenu = useCallback((items: MenuItem[]) => (
     <ul className="space-y-2">
       {items.map((item) => {
-        const isActive = pathname.startsWith(item.path);
+        // const isActive = pathname.startsWith(item.path);
+        const isActive = item.name === 'Campaign'?pathname.startsWith('/campaign'): pathname.startsWith(item.path);
         return (
           <li key={item.path}>
             <Link
@@ -281,7 +283,7 @@ const Sidebar: React.FC = () => {
             >
               <span className="min-w-[16px] flex items-center justify-center">
                 {React.cloneElement(item.icon, {
-                  className: `${isActive ? 'text-white' : 'text-[#696A71] group-hover:text-white'}w-4 h-4`,
+                  className: `${isActive ? 'text-white' : 'text-[#696A71]'} group-hover:text-white w-4 h-4`,
                 })}
               </span>
               <span
@@ -296,22 +298,6 @@ const Sidebar: React.FC = () => {
     </ul>
   ), [isMobileSidebarOpen, isSidebarHovered, pathname]);
 
-  // const renderHeaderMenu = () => {
-  //   switch (activeItem) {
-  //     case 'Campaign':
-  //       return campaignMenuItems;
-  //     case 'CRM':
-  //       return crmMenuItems;
-  //     case 'Lead Database':
-  //       return leadsMenuItems;
-  //     case 'Email Verifier':
-  //       return emailVerifierMenuItems;
-  //     case 'Settings':
-  //       return settingsMenuItems;
-  //     default:
-  //       return [];
-  //   }
-  // };
 
   const renderHeaderMenu = () => {
     const headerItems = (() => {
@@ -378,7 +364,7 @@ const Sidebar: React.FC = () => {
       </button>
 
       <div
-        className={`h-screen fixed top-0 left-0 bg-white  border-r border-gray-200 transition-all duration-300 ease-in-out z-50 flex flex-col ${isMobileSidebarOpen ? 'w-44 translate-x-0' : 'w-16 md:hover:w-44 group/sidebar translate-x-[-100%] md:translate-x-0'} p-2 max-w-44 md:max-w-44`}
+        className={`h-screen fixed top-0 left-0 bg-[#EAEDFD] border-r border-gray-200 transition-all duration-300 ease-in-out z-50 flex flex-col ${isMobileSidebarOpen ? 'w-44 translate-x-0' : 'w-16 md:hover:w-44 group/sidebar translate-x-[-100%] md:translate-x-0'} p-2 max-w-44 md:max-w-44`}
         onMouseEnter={() => setIsSidebarHovered(true)}
         onMouseLeave={() => setIsSidebarHovered(false)}
       >
@@ -391,16 +377,11 @@ const Sidebar: React.FC = () => {
               height={40}
               priority
             />
-            {/* <span
-              className={`text-xl font-semibold text-[#5570F1] whitespace-nowrap transition-opacity duration-300 ${isMobileSidebarOpen || (isSidebarHovered && window.innerWidth >= 768) ? 'opacity-100' : 'opacity-0 md:group-hover/sidebar:opacity-100'}`}
-            >
-              MailNexy
-            </span> */}
           </div>
 
           <nav className="flex-grow w-full">
             {renderMenu(primaryMenu)}
-            <div className="my-24"></div>
+            <div className="my-36"></div>
             {renderMenu(secondaryMenu)}
           </nav>
 
@@ -428,29 +409,7 @@ const Sidebar: React.FC = () => {
         className={`fixed top-0 left-0 right-0 bg-white border-b border-gray-200 p-3 z-40 flex items-center justify-between max-w-full transition-all duration-300 ${isMobileSidebarOpen ? 'left-44' : 'left-0 md:left-16'}`}
       >
         <div className="flex items-center space-x-2 sm:space-x-4 max-w-[calc(100%-120px)] overflow-x-auto scrollbar-hide">
-          {/* {renderHeaderMenu().map((item) => {
-            const isActive = pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`group flex items-center space-x-2 px-2 py-1 sm:px-3 sm:py-2 rounded-md transition-all duration-200 whitespace-nowrap ${isActive ? 'bg-[#5570F1]/10' : 'hover:bg-[#5570F1]/5'}`}
-                prefetch={!isActive}
-              >
-                <span className="flex items-center justify-center text-[12px]">
-                  {React.cloneElement(item.icon, {
-                    className: `${isActive ? 'text-[#5570F1]' : 'text-[#696A71] group-hover:text-[#5570F1]'} w-4 h-4`,
-                  })}
-                </span>
-                <span
-                  className={`text-[10px] sm:text-[11px] font-bold text-nowrap ${isActive ? 'text-[#5570F1]' : 'text-[#696A71] group-hover:text-[#5570F1]'}`}
-                >
-                  {item.name}
-                </span>
-              </Link>
-            );
-          })} */}
-
+   
            {renderHeaderMenu()}
         </div>
 

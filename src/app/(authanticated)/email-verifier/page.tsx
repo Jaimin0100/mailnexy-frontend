@@ -333,7 +333,7 @@ const EmailVerifier: React.FC = () => {
         <HeaderVariant1 />
 
         {activeTab === 'single' && (
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
+          <div className="bg-white rounded-xl p-6 mb-6 border border-gray-200">
             <div className="flex items-center gap-4 mb-4">
               <div className="relative flex-1">
                 <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -361,7 +361,7 @@ const EmailVerifier: React.FC = () => {
         )}
 
         {activeTab === 'bulk' && (
-          <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
+          <div className="bg-white rounded-xl p-6 mb-6 border border-gray-200">
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-4 flex-wrap">
                 <button
@@ -430,7 +430,7 @@ const EmailVerifier: React.FC = () => {
         )}
 
         {verificationResults.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="flex justify-between items-center p-4 border-b border-gray-200">
               <div className="relative w-64">
                 <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -547,7 +547,7 @@ const EmailVerifier: React.FC = () => {
         )}
 
         {verificationResults.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
+          <div className="flex flex-col items-center justify-center py-16 bg-white rounded-xl border border-gray-200">
             <Image
               src="/email-verifier.png"
               alt="No verifications"

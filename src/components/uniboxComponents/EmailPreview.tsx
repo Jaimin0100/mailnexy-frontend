@@ -17,7 +17,7 @@ export default function EmailPreview({ selectedEmail, handleEmailAction, handleQ
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-full flex flex-col">
+    <div className="bg-white rounded-xl border border-gray-200 p-6 h-full flex flex-col">
       {selectedEmail ? (
         <>
           <div className="flex justify-between items-center mb-4">

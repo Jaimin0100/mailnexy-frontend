@@ -470,7 +470,7 @@ export default function AllCampaign() {
                   <th className="p-5">Email Replies</th>
                   <th className="p-5">Bounce</th>
                   <th className="p-5">Interested</th>
-                  <th className="p-5"></th>
+                  <th className="p-5"><Image width={20} height={20} src="/customize.svg" alt="Customize Columns" className="mx-auto cursor-pointer" /></th>
                 </tr>
               </thead>
               <tbody>
@@ -584,7 +584,7 @@ export default function AllCampaign() {
                         </div>
                       </div>
                     </td>
-                    <td className="p-5">
+                    <td className="p-5 pl-12">
                         <DropdownMenu 
                           campaign={campaign} 
                           onAction={(action) => handleCampaignAction(campaign.id, action)} 

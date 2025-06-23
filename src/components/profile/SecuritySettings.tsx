@@ -35,11 +35,11 @@ const SecuritySettings: React.FC = () => {
   }, []);
 
   return (
-    <div className="p-6 bg-white rounded-xl shadow-lg border border-gray-100 transition-all duration-300 hover:shadow-xl">
+    <div className="p-6 bg-white rounded-xl border border-gray-200 transition-all duration-300">
       <h2 className="text-lg font-semibold text-gray-800 mb-4">Security Settings</h2>
       <div className="space-y-6">
         <div>
-          <h3 className="text-sm font-medium text-gray-600 mb-2">Change Password</h3>
+          <h3 className="text-sm font-bold text-gray-600 mb-2">Change Password</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <input
               type="password"
