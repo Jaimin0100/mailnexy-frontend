@@ -60,6 +60,7 @@ const WorkflowCanvas = () => {
   const [lastSavedNodes, setLastSavedNodes] = useState<Node[]>([]);
   const [lastSavedEdges, setLastSavedEdges] = useState<Edge[]>([]);
   const [lastSavedName, setLastSavedName] = useState("Untitled Workflow");
+  const [isLoading, setIsLoading] = useState(true);
 
   // // Load campaigns on mount
   // useEffect(() => {
@@ -180,6 +181,8 @@ const WorkflowCanvas = () => {
     const flowData = prepareFlowData();
     if (!flowData) return;
 
+    console.log('Saving flow data:', JSON.stringify(flowData, null, 2));
+
     try {
       let response;
       
@@ -266,11 +269,21 @@ const WorkflowCanvas = () => {
     }
 
     return {
-      nodes,
-      edges,
+      nodes: nodes.map(node => ({
+        id: node.id,
+        type: node.type,
+        position: node.position,
+        data: node.data
+      })),
+      edges: edges.map(edge => ({
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          condition: edge.condition || ""
+      })),
       meta: {
-        savedAt: new Date().toISOString(),
-        version: '1.0'
+          savedAt: new Date().toISOString(),
+          version: '1.0'
       }
     };
   };
@@ -508,115 +521,116 @@ const WorkflowCanvas = () => {
 
   return (
     <div className="flex-1 h-full" ref={reactFlowWrapper}>
-      <ReactFlowProvider>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={handleNodesChange}
-          onEdgesChange={handleEdgesChange}
-          onConnect={onConnect}
-          onInit={onInit}
-          onDragOver={onDragOver}
-          onDrop={onDrop}
-          nodeTypes={nodeTypes}
-          onNodeClick={(_, node) => setSelectedNode(node)}
-          onNodeContextMenu={(_, node) => {
-            if (confirm(`Delete node "${node.data.label}"?`)) {
-              setNodes((nds) => nds.filter((n) => n.id !== node.id));
-              setEdges((eds) => eds.filter((e) => e.source !== node.id && e.target !== node.id));
-            }
-          }}
-          onEdgeClick={(_, edge) => {
-            if (confirm(`Delete this connection from "${edge.source}" to "${edge.target}"?`)) {
-              setEdges((eds) => eds.filter((e) => e.id !== edge.id));
-            }
-          }}
-          minZoom={0.1}
-          maxZoom={2}
-          fitViewOptions={{ padding: 0.2 }}
-        >
-          <Controls />
-          <Background />
-          
-          <Panel position="top-left">
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={workflowName}
-                onChange={(e) => setWorkflowName(e.target.value)}
-                className="text-[#53545C] px-4 py-2 bg-gray-100 rounded border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter workflow name"
-              />
-              {lastSaved && (
-                <span className="text-xs text-gray-500">
-                  Last saved: {lastSaved}
-                </span>
-              )}
-              {hasUnsavedChanges && (
-                <span className="text-xs text-yellow-600">
-                  Unsaved changes
-                </span>
-              )}
+      {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+                <div>Loading campaign...</div>
             </div>
-          </Panel>
+        ) : (
+      <><ReactFlowProvider>
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={handleNodesChange}
+              onEdgesChange={handleEdgesChange}
+              onConnect={onConnect}
+              onInit={onInit}
+              onDragOver={onDragOver}
+              onDrop={onDrop}
+              nodeTypes={nodeTypes}
+              onNodeClick={(_, node) => setSelectedNode(node)}
+              onNodeContextMenu={(_, node) => {
+                if (confirm(`Delete node "${node.data.label}"?`)) {
+                  setNodes((nds) => nds.filter((n) => n.id !== node.id));
+                  setEdges((eds) => eds.filter((e) => e.source !== node.id && e.target !== node.id));
+                }
+              } }
+              onEdgeClick={(_, edge) => {
+                if (confirm(`Delete this connection from "${edge.source}" to "${edge.target}"?`)) {
+                  setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+                }
+              } }
+              minZoom={0.1}
+              maxZoom={2}
+              fitViewOptions={{ padding: 0.2 }}
+            >
+              <Controls />
+              <Background />
 
-          <Panel position="top-right">
-            <div className="flex gap-2">
-              {isSimulating ? (
-                <button
-                  onClick={stopSimulation}
-                  className="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-700"
-                >
-                  ⏹ Stop Simulation
-                </button>
-              ) : (
-                <button
-                  onClick={startCampaign}
-                  className="bg-[#5570F1] text-white px-4 py-2 rounded shadow hover:bg-blue-700"
-                >
-                  ▶ Start Campaign
-                </button>
+              <Panel position="top-left">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={workflowName}
+                    onChange={(e) => setWorkflowName(e.target.value)}
+                    className="text-[#53545C] px-4 py-2 bg-gray-100 rounded border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter workflow name" />
+                  {lastSaved && (
+                    <span className="text-xs text-gray-500">
+                      Last saved: {lastSaved}
+                    </span>
+                  )}
+                  {hasUnsavedChanges && (
+                    <span className="text-xs text-yellow-600">
+                      Unsaved changes
+                    </span>
+                  )}
+                </div>
+              </Panel>
+
+              <Panel position="top-right">
+                <div className="flex gap-2">
+                  {isSimulating ? (
+                    <button
+                      onClick={stopSimulation}
+                      className="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-700"
+                    >
+                      ⏹ Stop Simulation
+                    </button>
+                  ) : (
+                    <button
+                      onClick={startCampaign}
+                      className="bg-[#5570F1] text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+                    >
+                      ▶ Start Campaign
+                    </button>
+                  )}
+                  <button
+                    onClick={handleSave}
+                    className="bg-purple-400 text-white px-4 py-2 rounded hover:bg-purple-600"
+                    disabled={!hasUnsavedChanges}
+                  >
+                    💾 {hasUnsavedChanges ? 'Save Workflow' : 'Saved'}
+                  </button>
+                  <button
+                    onClick={exportToJSON}
+                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
+                  >
+                    📄 Export JSON
+                  </button>
+                </div>
+              </Panel>
+
+              {simulationLog.length > 0 && (
+                <Panel position="bottom-right" className="bg-white bg-opacity-90 p-4 rounded shadow-lg max-h-64 overflow-auto">
+                  <div className="font-bold mb-2">Simulation Log:</div>
+                  <div className="text-sm space-y-1">
+                    {simulationLog.map((log, index) => (
+                      <div key={index}>{log}</div>
+                    ))}
+                  </div>
+                </Panel>
               )}
-              <button
-                onClick={handleSave}
-                className="bg-purple-400 text-white px-4 py-2 rounded hover:bg-purple-600"
-                disabled={!hasUnsavedChanges}
-              >
-                💾 {hasUnsavedChanges ? 'Save Workflow' : 'Saved'}
-              </button>
-              <button
-                onClick={exportToJSON}
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
-              >
-                📄 Export JSON
-              </button>
-            </div>
-          </Panel>
-
-          {simulationLog.length > 0 && (
-            <Panel position="bottom-right" className="bg-white bg-opacity-90 p-4 rounded shadow-lg max-h-64 overflow-auto">
-              <div className="font-bold mb-2">Simulation Log:</div>
-              <div className="text-sm space-y-1">
-                {simulationLog.map((log, index) => (
-                  <div key={index}>{log}</div>
-                ))}
-              </div>
-            </Panel>
-          )}
-        </ReactFlow>
-      </ReactFlowProvider>
-
-      <NodeModal
-        isOpen={!!selectedNode}
-        onClose={() => setSelectedNode(null)}
-        node={selectedNode}
-        onSave={(updatedNode: Node) => {
-          setNodes((nds) =>
-            nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
-          );
-          setSelectedNode(null);
-        }}
-      />
+            </ReactFlow>
+          </ReactFlowProvider><NodeModal
+              isOpen={!!selectedNode}
+              onClose={() => setSelectedNode(null)}
+              node={selectedNode}
+              onSave={(updatedNode: Node) => {
+                setNodes((nds) => nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
+                );
+                setSelectedNode(null);
+              } } /></>
+    )}
     </div>
   );
 };

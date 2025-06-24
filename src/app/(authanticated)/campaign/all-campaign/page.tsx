@@ -14,6 +14,10 @@ interface Campaign {
   reply_count: number;
   bounce_count: number;
   interested_count: number;
+  flow?: {
+    nodes: any[];  // Adjust with actual node type
+    edges: any[];  // Adjust with actual edge type
+  };
 }
 
 export default function AllCampaign() {
