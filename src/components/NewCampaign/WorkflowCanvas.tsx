@@ -62,96 +62,53 @@ const WorkflowCanvas = () => {
   const [lastSavedName, setLastSavedName] = useState("Untitled Workflow");
   const [isLoading, setIsLoading] = useState(true);
 
-  // // Load campaigns on mount
-  // useEffect(() => {
-  //   const fetchCampaigns = async () => {
-  //     try {
-  //       const response = await campaignAPI.getCampaigns();
-  //       if (response?.data?.length > 0) {
-  //         const campaign = response.data[0];
-  //         if (!campaign) return;
-          
-  //         setCampaignId(campaign.id || '');
-  //         setWorkflowName(campaign.name || 'Untitled Workflow');
-  //         setLastSavedName(campaign.name || 'Untitled Workflow');
-          
-  //         // Safely access flow data with fallbacks
-  //         const flowData = campaign.flow || {};
-  //         const nodes = Array.isArray(flowData.nodes) ? flowData.nodes : initialNodes;
-  //         const edges = Array.isArray(flowData.edges) ? flowData.edges : initialEdges;
-          
-  //         setNodes(nodes);
-  //         setEdges(edges);
-  //         setLastSavedNodes([...nodes]);
-  //         setLastSavedEdges([...edges]);
-  //         setLastSaved(new Date().toLocaleTimeString());
-  //       } else {
-  //         // Initialize with default nodes if no campaigns exist
-  //         setNodes(initialNodes);
-  //         setEdges(initialEdges);
-  //         setLastSavedNodes([...initialNodes]);
-  //         setLastSavedEdges([...initialEdges]);
-  //       }
-  //     } catch (error) {
-  //       console.error('Failed to load campaigns:', error);
-  //       // Initialize with default nodes on error
-  //       setNodes(initialNodes);
-  //       setEdges(initialEdges);
-  //       setLastSavedNodes([...initialNodes]);
-  //       setLastSavedEdges([...initialEdges]);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-    
-  //   fetchCampaigns();
-  // }, []);
 
-    // Update useEffect to use passed campaignId
+
     useEffect(() => {
-      const fetchCampaign = async () => {
-        try {
-          if (campaignId) {
-            // Fetch specific campaign by ID
-            const response = await campaignAPI.getCampaign(campaignId);
-            const campaignData = response.data;
-            
-            setCampaignId(campaignData.id || '');
-            setWorkflowName(campaignData.name || 'Untitled Workflow');
-            setLastSavedName(campaignData.name || 'Untitled Workflow');
-            
-            const flowData = campaignData.flow || {};
-            const nodes = Array.isArray(flowData.nodes) ? flowData.nodes : initialNodes;
-            const edges = Array.isArray(flowData.edges) ? flowData.edges : initialEdges;
+    const fetchCampaign = async () => {
+      try {
+        if (campaignId) {
+          const response = await campaignAPI.getCampaign(campaignId);
+          const campaignData = response.data;
+          
+          setWorkflowName(campaignData.campaign.name || 'Untitled Workflow');
+          setLastSavedName(campaignData.campaign.name || 'Untitled Workflow');
+          
+          // Initialize nodes and edges from the campaign data
+          if (campaignData.flow) {
+            const nodes = campaignData.flow.nodes || initialNodes;
+            const edges = campaignData.flow.edges || initialEdges;
             
             setNodes(nodes);
             setEdges(edges);
             setLastSavedNodes([...nodes]);
             setLastSavedEdges([...edges]);
-            setLastSaved(new Date().toLocaleTimeString());
           } else {
-            // New campaign
+            // If no flow data, initialize with default nodes
             setNodes(initialNodes);
             setEdges(initialEdges);
-            setLastSavedNodes([...initialNodes]);
-            setLastSavedEdges([...initialEdges]);
-            setWorkflowName("Untitled Workflow");
-            setLastSavedName("Untitled Workflow");
           }
-        } catch (error) {
-          console.error('Failed to load campaign:', error);
-          // Fallback to initial state
+          
+          setLastSaved(new Date().toLocaleTimeString());
+        } else {
+          // New campaign
           setNodes(initialNodes);
           setEdges(initialEdges);
-          setLastSavedNodes([...initialNodes]);
-          setLastSavedEdges([...initialEdges]);
-        } finally {
-          setIsLoading(false);
+          setWorkflowName("Untitled Workflow");
+          setLastSavedName("Untitled Workflow");
         }
-      };
-      
-      fetchCampaign();
-    }, [campaignId]); // Depend on campaignId prop
+      } catch (error) {
+        console.error('Failed to load campaign:', error);
+        // Fallback to initial state
+        setNodes(initialNodes);
+        setEdges(initialEdges);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchCampaign();
+  }, [campaignId]); // Only run when campaignId changes
 
   // Auto-save effect
   useEffect(() => {
@@ -203,13 +160,13 @@ const WorkflowCanvas = () => {
         setCampaignId(response.data.id);
       }
       
-      if (response.data) {
+      // if (response.data) {
         setHasUnsavedChanges(false);
         setLastSaved(new Date().toLocaleTimeString());
         setLastSavedNodes([...nodes]);
         setLastSavedEdges([...edges]);
         setLastSavedName(workflowName);
-      }
+      // }
     } catch (error) {
       console.error('Error saving campaign:', error);
     }

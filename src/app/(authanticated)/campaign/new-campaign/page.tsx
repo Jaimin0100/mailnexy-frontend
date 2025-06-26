@@ -55,7 +55,7 @@ export default function CreateCampaignPage() {
             edges: []
           },
         });
-        setSelectedCampaign(response.data);
+        setSelectedCampaign(response.data.campaign);
         setShowPopup(false);
       } catch (error) {
         console.error("Failed to create campaign", error);
