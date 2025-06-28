@@ -293,7 +293,7 @@ export default function Sender() {
   }, [searchQuery, senders]);
 
   return (
-    <div className="bg-[#F6F6F6] overflow-hidden min-h-screen p-6">
+    <div className="bg-gray-50 overflow-hidden min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>

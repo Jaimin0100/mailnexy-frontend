@@ -42,6 +42,8 @@ export default function CreateCampaignPage() {
       try {
         const response = await campaignAPI.createCampaign({
           name,
+          description: "", // Add empty description
+          lead_list_ids: [], // Add empty array for lead lists
           status: "draft",
           flow: {
             nodes: [
@@ -49,16 +51,35 @@ export default function CreateCampaignPage() {
                 id: "1",
                 type: "custom",
                 position: { x: 250, y: 5 },
-                data: { label: "Start", type: "start" },
+                data: { label: "Start", 
+                        type: "start",
+                        subject: "",
+                        body: "",
+                        templateID: null,
+                        conditionType: "",
+                        matchValue: "",
+                        delayAmount: 0,
+                        delayUnit: "",
+                        goalType: "" },
               }
             ],
             edges: []
           },
         });
+        if (response.status >= 400) {
+          console.error("Backend error:", response.data);
+          alert(`Error: ${response.data.error || 'Failed to create campaign'}`);
+          return;
+        }
         setSelectedCampaign(response.data.campaign);
         setShowPopup(false);
       } catch (error) {
         console.error("Failed to create campaign", error);
+        if (error.response) {
+          alert(`Error: ${error.response.data.error || error.message}`);
+        } else {
+          alert("Failed to create campaign. Please check console for details.");
+        }
       }
     };
 
@@ -108,7 +129,7 @@ export default function CreateCampaignPage() {
         {currentStep === 1 && (
           <div className="flex relative">
             <div className="flex-1">
-              <WorkflowCanvas campaignId={selectedCampaign.id} />
+              <WorkflowCanvas campaignId={selectedCampaign.id}  />
             </div>
             <div className="ml-4">
               <NodeSidebar />

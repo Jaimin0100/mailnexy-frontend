@@ -45,7 +45,7 @@ const initialEdges: Edge[] = [];
 const MULTI_OUTPUT_NODES = ['condition', 'abTest'];
 const AUTO_SAVE_INTERVAL = 60000; // 60 seconds
 
-const WorkflowCanvas = () => {
+const WorkflowCanvas = ({ campaignId: propCampaignId }: WorkflowCanvasProps) => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes] = useNodesState(initialNodes);
   const [edges, setEdges] = useEdgesState(initialEdges);
@@ -67,17 +67,22 @@ const WorkflowCanvas = () => {
     useEffect(() => {
     const fetchCampaign = async () => {
       try {
-        if (campaignId) {
-          const response = await campaignAPI.getCampaign(campaignId);
-          const campaignData = response.data;
+        if (propCampaignId) {
+          const flowResponse  = await campaignAPI.getCampaignFlow(propCampaignId);
+          const flowData = flowResponse.data;
+          console.log('Fetched flow data:', flowData);
+
+          const campaignResponse = await campaignAPI.getCampaign(propCampaignId);
+          const campaignData = campaignResponse.data;
+          console.log('Fetched campaign data:', campaignData);
           
-          setWorkflowName(campaignData.campaign.name || 'Untitled Workflow');
-          setLastSavedName(campaignData.campaign.name || 'Untitled Workflow');
+          setWorkflowName(campaignData.name || 'Untitled Workflow');
+          setLastSavedName(campaignData.name || 'Untitled Workflow');
           
           // Initialize nodes and edges from the campaign data
-          if (campaignData.flow) {
-            const nodes = campaignData.flow.nodes || initialNodes;
-            const edges = campaignData.flow.edges || initialEdges;
+          if (flowData) {
+            const nodes = flowData.nodes || initialNodes;
+            const edges = flowData.edges || initialEdges;
             
             setNodes(nodes);
             setEdges(edges);
@@ -143,21 +148,20 @@ const WorkflowCanvas = () => {
     try {
       let response;
       
-      if (campaignId) {
+      if (propCampaignId) {
         // Update existing campaign
-        response = await campaignAPI.updateCampaign(campaignId, {
-          name: workflowName,
-          flow: flowData,
-          status: 'draft'
-        });
+        response = await campaignAPI.updateCampaign(propCampaignId,flowData);
+        if (workflowName !== lastSavedName) {
+          await campaignAPI.updateCampaign(propCampaignId, { name: workflowName, status: 'draft' });
+        }
       } else {
         // Create new campaign
-        response = await campaignAPI.createCampaign({
+        const response = await campaignAPI.createCampaign({
           name: workflowName,
           flow: flowData,
           status: 'draft'
         });
-        setCampaignId(response.data.id);
+        propCampaignId = response.data.id;
       }
       
       // if (response.data) {
@@ -230,7 +234,10 @@ const WorkflowCanvas = () => {
         id: node.id,
         type: node.type,
         position: node.position,
-        data: node.data
+        data: {
+          type: node.data.type, // Ensure type is included
+          ...node.data
+        }
       })),
       edges: edges.map(edge => ({
           id: edge.id,
@@ -314,7 +321,7 @@ const WorkflowCanvas = () => {
         type: 'custom',
         position,
         data: { 
-          label, 
+          label: label || type, 
           type,
           onDelete: (nodeId: string) => {
             if (confirm('Are you sure you want to delete this node?')) {
