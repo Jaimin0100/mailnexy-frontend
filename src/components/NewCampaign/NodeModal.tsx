@@ -31,16 +31,16 @@ export default function NodeModal({ isOpen, onClose, node, onSave }: NodeModalPr
   };
 
   const renderNodeForm = () => {
-    // First check if node exists and has data
-    if (!node || !node.data) return null;
+    // Check if node exists and has a type
+    if (!node || !node.type) return null;
 
-    // Then safely access node.data.type
-    switch (node.data.type) {
+    // Use top-level node type
+    switch (node.type) {
       case 'email': return <EmailNode />;
       case 'condition': return <ConditionNode />;
       case 'delay': return <DelayNode />;
       case 'goal': return <GoalNode />;
-      case 'abtest': return <ABTestNode />;
+      case 'abTest': return <ABTestNode />;
       default: return null;
     }
   };
@@ -67,7 +67,7 @@ export default function NodeModal({ isOpen, onClose, node, onSave }: NodeModalPr
         <form onSubmit={methods.handleSubmit(onSubmit)}>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold text-gray-800">
-              Configure {node?.data?.type ? `${node.data.type} Node` : 'Node'}
+              Configure {node?.type ? `${node.type} Node` : 'Node'}
             </h2>
             <button
               onClick={onClose}

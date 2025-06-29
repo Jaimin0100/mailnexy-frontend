@@ -19,22 +19,31 @@ import ReactFlow, {
   EdgeChange,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
+import _ from 'lodash'; // Add this at the top
 import CustomNode from './CustomNode';
 import NodeModal from './NodeModal';
 import { campaignAPI } from '@/utils/api';
 
 const nodeTypes = {
-  custom: CustomNode,
+  start: CustomNode,
+  email: CustomNode,
+  condition: CustomNode,
+  delay: CustomNode,
+  goal: CustomNode,
+  abTest: CustomNode,
+  custom: CustomNode, // keep as fallback
 };
 
 interface WorkflowCanvasProps {
   campaignId?: string;
+  campaignName: string; // NEW: Receive name from parent
+  onSaveSuccess: (campaign: any) => void; // NEW: Save callback
 }
 
 const initialNodes: Node[] = [
   {
     id: '1',
-    type: 'custom',
+    type: 'start',
     position: { x: 250, y: 5 },
     data: { label: 'Start', type: 'start' },
   },
@@ -45,12 +54,12 @@ const initialEdges: Edge[] = [];
 const MULTI_OUTPUT_NODES = ['condition', 'abTest'];
 const AUTO_SAVE_INTERVAL = 60000; // 60 seconds
 
-const WorkflowCanvas = ({ campaignId: propCampaignId }: WorkflowCanvasProps) => {
+const WorkflowCanvas = ({ campaignId: propCampaignId, campaign: propCampaign, campaignName, onSaveSuccess }: WorkflowCanvasProps) => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes] = useNodesState(initialNodes);
   const [edges, setEdges] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [workflowName, setWorkflowName] = useState("Untitled Workflow");
+  const [workflowName, setWorkflowName] = useState(campaignName);
   const [rfInstance, setRfInstance] = useState<any>(null);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationLog, setSimulationLog] = useState<string[]>([]);
@@ -64,26 +73,26 @@ const WorkflowCanvas = ({ campaignId: propCampaignId }: WorkflowCanvasProps) => 
 
 
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchCampaign = async () => {
       try {
         if (propCampaignId) {
-          const flowResponse  = await campaignAPI.getCampaignFlow(propCampaignId);
+          const flowResponse = await campaignAPI.getCampaignFlow(propCampaignId);
           const flowData = flowResponse.data;
           console.log('Fetched flow data:', flowData);
 
           const campaignResponse = await campaignAPI.getCampaign(propCampaignId);
           const campaignData = campaignResponse.data;
           console.log('Fetched campaign data:', campaignData);
-          
+
           setWorkflowName(campaignData.name || 'Untitled Workflow');
           setLastSavedName(campaignData.name || 'Untitled Workflow');
-          
+
           // Initialize nodes and edges from the campaign data
           if (flowData) {
             const nodes = flowData.nodes || initialNodes;
             const edges = flowData.edges || initialEdges;
-            
+
             setNodes(nodes);
             setEdges(edges);
             setLastSavedNodes([...nodes]);
@@ -93,7 +102,7 @@ const WorkflowCanvas = ({ campaignId: propCampaignId }: WorkflowCanvasProps) => 
             setNodes(initialNodes);
             setEdges(initialEdges);
           }
-          
+
           setLastSaved(new Date().toLocaleTimeString());
         } else {
           // New campaign
@@ -111,24 +120,24 @@ const WorkflowCanvas = ({ campaignId: propCampaignId }: WorkflowCanvasProps) => 
         setIsLoading(false);
       }
     };
-    
+
     fetchCampaign();
   }, [campaignId]); // Only run when campaignId changes
 
   // Auto-save effect
   useEffect(() => {
-    const hasChanges = 
+    const hasChanges =
       JSON.stringify(nodes) !== JSON.stringify(lastSavedNodes) ||
       JSON.stringify(edges) !== JSON.stringify(lastSavedEdges) ||
       workflowName !== lastSavedName;
-    
+
     if (!hasChanges) {
       setHasUnsavedChanges(false);
       return;
     }
 
     setHasUnsavedChanges(true);
-    
+
     const autoSaveTimer = setTimeout(() => {
       if (hasChanges) {
         handleSave();
@@ -147,29 +156,30 @@ const WorkflowCanvas = ({ campaignId: propCampaignId }: WorkflowCanvasProps) => 
 
     try {
       let response;
-      
-      if (propCampaignId) {
+
+      if (propCampaign?.id && !propCampaign.id.startsWith("draft-")) {
         // Update existing campaign
-        response = await campaignAPI.updateCampaign(propCampaignId,flowData);
-        if (workflowName !== lastSavedName) {
-          await campaignAPI.updateCampaign(propCampaignId, { name: workflowName, status: 'draft' });
-        }
+        response = await campaignAPI.updateCampaign(propCampaign.id, {...flowData,name: workflowName });
+        // if (workflowName !== lastSavedName) {
+        //   await campaignAPI.updateCampaign(propCampaignId, { name: workflowName, status: 'draft' });
+        // }
       } else {
         // Create new campaign
         const response = await campaignAPI.createCampaign({
           name: workflowName,
-          flow: flowData,
+          ...flowData,
           status: 'draft'
         });
         propCampaignId = response.data.id;
+        setCampaignId(response.data.id);
       }
-      
+      onSaveSuccess(response.data);
       // if (response.data) {
-        setHasUnsavedChanges(false);
-        setLastSaved(new Date().toLocaleTimeString());
-        setLastSavedNodes([...nodes]);
-        setLastSavedEdges([...edges]);
-        setLastSavedName(workflowName);
+      setHasUnsavedChanges(false);
+      setLastSaved(new Date().toLocaleTimeString());
+      setLastSavedNodes([...nodes]);
+      setLastSavedEdges([...edges]);
+      setLastSavedName(workflowName);
       // }
     } catch (error) {
       console.error('Error saving campaign:', error);
@@ -187,7 +197,7 @@ const WorkflowCanvas = ({ campaignId: propCampaignId }: WorkflowCanvasProps) => 
     try {
       // Save before starting
       await handleSave();
-      
+
       if (!campaignId) {
         throw new Error("Campaign ID missing");
       }
@@ -229,27 +239,64 @@ const WorkflowCanvas = ({ campaignId: propCampaignId }: WorkflowCanvasProps) => 
       return null;
     }
 
-    return {
-      nodes: nodes.map(node => ({
+    const nodeDataWhitelist: Record<string, string[]> = {
+      start: ['label'],
+      email: ['label', 'subject', 'body'],
+      condition: ['label', 'openedEmailEnabled', 'clickedLinkEnabled', 'openedEmailWaitingTime', 'clickedLinkWaitingTime'],
+      delay: ['label', 'waitingTime'],
+      goal: ['label'],
+      abTest: ['label', 'splitPercentage'],
+    };
+
+    // return {
+    //   nodes: nodes.map(node => ({
+    //     id: node.id,
+    //     type: node.type,
+    //     position: node.position,
+    //     data: Object.fromEntries(
+    //       Object.entries(node.data).filter(([key]) => key !== 'type'))
+    //   })),
+    //   edges: edges.map(edge => ({
+    //     id: edge.id,
+    //     source: edge.source,
+    //     target: edge.target,
+    //     condition: edge.condition || ""
+    //   })),
+    //   meta: {
+    //     savedAt: new Date().toISOString(),
+    //     version: '1.0'
+    //   }
+    // };
+
+    // Inside prepareFlowData function:
+  return {
+    nodes: nodes.map(node => {
+      const allowedKeys = nodeDataWhitelist[node.type] || ['label'];
+      const filteredData = Object.keys(node.data)
+        .filter(key => allowedKeys.includes(key))
+        .reduce((obj, key) => {
+          obj[key] = node.data[key];
+          return obj;
+        }, {} as Record<string, any>);
+
+      return {
         id: node.id,
         type: node.type,
         position: node.position,
-        data: {
-          type: node.data.type, // Ensure type is included
-          ...node.data
-        }
-      })),
-      edges: edges.map(edge => ({
-          id: edge.id,
-          source: edge.source,
-          target: edge.target,
-          condition: edge.condition || ""
-      })),
-      meta: {
-          savedAt: new Date().toISOString(),
-          version: '1.0'
-      }
-    };
+        data: filteredData
+      };
+    }),
+    edges: edges.map(edge => ({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      condition: edge.condition || ""
+    })),
+    meta: {
+      savedAt: new Date().toISOString(),
+      version: '1.0'
+    }
+  };
   };
 
   const onInit = useCallback((instance: any) => {
@@ -262,7 +309,7 @@ const WorkflowCanvas = ({ campaignId: propCampaignId }: WorkflowCanvasProps) => 
       setEdges((eds) => {
         const sourceNode = nodes.find(n => n.id === params.source);
         const isMultiOutputNode = sourceNode && MULTI_OUTPUT_NODES.includes(sourceNode.data.type);
-        
+
         if (!isMultiOutputNode) {
           const hasExistingOutgoingEdge = eds.some(e => e.source === params.source);
           if (hasExistingOutgoingEdge) {
@@ -270,15 +317,15 @@ const WorkflowCanvas = ({ campaignId: propCampaignId }: WorkflowCanvasProps) => 
             return eds;
           }
         }
-        
+
         const connectionExists = eds.some(
           (e) => e.source === params.source && e.target === params.target
         );
-        
+
         if (connectionExists) {
           return eds;
         }
-        
+
         return addEdge(
           {
             ...params,
@@ -318,10 +365,15 @@ const WorkflowCanvas = ({ campaignId: propCampaignId }: WorkflowCanvasProps) => 
 
       const newNode: Node = {
         id: `${Date.now()}`,
-        type: 'custom',
+        type: type,
         position,
-        data: { 
-          label: label || type, 
+        data: {
+          ...(type === 'email' && { subject: '', body: '' }),
+          ...(type === 'condition' && { 
+            openedEmailEnabled: true,
+            clickedLinkEnabled: true 
+          }),
+          label: label || type,
           type,
           onDelete: (nodeId: string) => {
             if (confirm('Are you sure you want to delete this node?')) {
@@ -405,7 +457,7 @@ const WorkflowCanvas = ({ campaignId: propCampaignId }: WorkflowCanvasProps) => 
           break;
         case 'condition':
           log.push(`🔀 Condition: ${node.data.condition || 'No condition set'}`);
-          
+
           const nextYes = getNextByHandle(node.id, 'yes');
           const nextNo = getNextByHandle(node.id, 'no');
 
@@ -471,130 +523,149 @@ const WorkflowCanvas = ({ campaignId: propCampaignId }: WorkflowCanvasProps) => 
         version: '1.0'
       }
     };
-    
+
     const dataStr = JSON.stringify(workflowData, null, 2);
     const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`;
-    
+
     const exportFileDefaultName = `${workflowName.replace(/\s+/g, '_')}_workflow.json`;
-    
+
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);
     linkElement.setAttribute('download', exportFileDefaultName);
     linkElement.click();
   };
 
+  // // Add this useEffect to migrate existing nodes
+  // useEffect(() => {
+  //   setNodes(nds => nds.map(n => {
+  //     // If node has data.type but no top-level type
+  //     if (n.data?.type && !n.type) {
+  //       return {
+  //         ...n,
+  //         type: n.data.type,
+  //         data: {
+  //           ...n.data,
+  //           // Remove type from data if it exists
+  //           type: undefined
+  //         }
+  //       };
+  //     }
+  //     return n;
+  //   }));
+  // }, []);
+
   return (
     <div className="flex-1 h-full" ref={reactFlowWrapper}>
       {isLoading ? (
-            <div className="flex items-center justify-center h-full">
-                <div>Loading campaign...</div>
-            </div>
-        ) : (
-      <><ReactFlowProvider>
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={handleNodesChange}
-              onEdgesChange={handleEdgesChange}
-              onConnect={onConnect}
-              onInit={onInit}
-              onDragOver={onDragOver}
-              onDrop={onDrop}
-              nodeTypes={nodeTypes}
-              onNodeClick={(_, node) => setSelectedNode(node)}
-              onNodeContextMenu={(_, node) => {
-                if (confirm(`Delete node "${node.data.label}"?`)) {
-                  setNodes((nds) => nds.filter((n) => n.id !== node.id));
-                  setEdges((eds) => eds.filter((e) => e.source !== node.id && e.target !== node.id));
-                }
-              } }
-              onEdgeClick={(_, edge) => {
-                if (confirm(`Delete this connection from "${edge.source}" to "${edge.target}"?`)) {
-                  setEdges((eds) => eds.filter((e) => e.id !== edge.id));
-                }
-              } }
-              minZoom={0.1}
-              maxZoom={2}
-              fitViewOptions={{ padding: 0.2 }}
-            >
-              <Controls />
-              <Background />
+        <div className="flex items-center justify-center h-full">
+          <div>Loading campaign...</div>
+        </div>
+      ) : (
+        <><ReactFlowProvider>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={handleNodesChange}
+            onEdgesChange={handleEdgesChange}
+            onConnect={onConnect}
+            onInit={onInit}
+            onDragOver={onDragOver}
+            onDrop={onDrop}
+            nodeTypes={nodeTypes}
+            onNodeClick={(_, node) => setSelectedNode(node)}
+            onNodeContextMenu={(_, node) => {
+              if (confirm(`Delete node "${node.data.label}"?`)) {
+                setNodes((nds) => nds.filter((n) => n.id !== node.id));
+                setEdges((eds) => eds.filter((e) => e.source !== node.id && e.target !== node.id));
+              }
+            }}
+            onEdgeClick={(_, edge) => {
+              if (confirm(`Delete this connection from "${edge.source}" to "${edge.target}"?`)) {
+                setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+              }
+            }}
+            minZoom={0.1}
+            maxZoom={2}
+            fitViewOptions={{ padding: 0.2 }}
+          >
+            <Controls />
+            <Background />
 
-              <Panel position="top-left">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={workflowName}
-                    onChange={(e) => setWorkflowName(e.target.value)}
-                    className="text-[#53545C] px-4 py-2 bg-gray-100 rounded border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter workflow name" />
-                  {lastSaved && (
-                    <span className="text-xs text-gray-500">
-                      Last saved: {lastSaved}
-                    </span>
-                  )}
-                  {hasUnsavedChanges && (
-                    <span className="text-xs text-yellow-600">
-                      Unsaved changes
-                    </span>
-                  )}
+            <Panel position="top-left">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={workflowName}
+                  onChange={(e) => setWorkflowName(e.target.value)}
+                  className="text-[#53545C] px-4 py-2 bg-gray-100 rounded border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter workflow name" />
+                {lastSaved && (
+                  <span className="text-xs text-gray-500">
+                    Last saved: {lastSaved}
+                  </span>
+                )}
+                {hasUnsavedChanges && (
+                  <span className="text-xs text-yellow-600">
+                    Unsaved changes
+                  </span>
+                )}
+              </div>
+            </Panel>
+
+            <Panel position="top-right">
+              <div className="flex gap-2">
+                {isSimulating ? (
+                  <button
+                    onClick={stopSimulation}
+                    className="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-700"
+                  >
+                    ⏹ Stop Simulation
+                  </button>
+                ) : (
+                  <button
+                    onClick={startCampaign}
+                    className="bg-[#5570F1] text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+                  >
+                    ▶ Start Campaign
+                  </button>
+                )}
+                <button
+                  onClick={handleSave}
+                  className="bg-purple-400 text-white px-4 py-2 rounded hover:bg-purple-600"
+                  disabled={!hasUnsavedChanges}
+                >
+                  💾 {hasUnsavedChanges ? 'Save Workflow' : 'Saved'}
+                </button>
+                <button
+                  onClick={exportToJSON}
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
+                >
+                  📄 Export JSON
+                </button>
+              </div>
+            </Panel>
+
+            {simulationLog.length > 0 && (
+              <Panel position="bottom-right" className="bg-white bg-opacity-90 p-4 rounded shadow-lg max-h-64 overflow-auto">
+                <div className="font-bold mb-2">Simulation Log:</div>
+                <div className="text-sm space-y-1">
+                  {simulationLog.map((log, index) => (
+                    <div key={index}>{log}</div>
+                  ))}
                 </div>
               </Panel>
-
-              <Panel position="top-right">
-                <div className="flex gap-2">
-                  {isSimulating ? (
-                    <button
-                      onClick={stopSimulation}
-                      className="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-700"
-                    >
-                      ⏹ Stop Simulation
-                    </button>
-                  ) : (
-                    <button
-                      onClick={startCampaign}
-                      className="bg-[#5570F1] text-white px-4 py-2 rounded shadow hover:bg-blue-700"
-                    >
-                      ▶ Start Campaign
-                    </button>
-                  )}
-                  <button
-                    onClick={handleSave}
-                    className="bg-purple-400 text-white px-4 py-2 rounded hover:bg-purple-600"
-                    disabled={!hasUnsavedChanges}
-                  >
-                    💾 {hasUnsavedChanges ? 'Save Workflow' : 'Saved'}
-                  </button>
-                  <button
-                    onClick={exportToJSON}
-                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700"
-                  >
-                    📄 Export JSON
-                  </button>
-                </div>
-              </Panel>
-
-              {simulationLog.length > 0 && (
-                <Panel position="bottom-right" className="bg-white bg-opacity-90 p-4 rounded shadow-lg max-h-64 overflow-auto">
-                  <div className="font-bold mb-2">Simulation Log:</div>
-                  <div className="text-sm space-y-1">
-                    {simulationLog.map((log, index) => (
-                      <div key={index}>{log}</div>
-                    ))}
-                  </div>
-                </Panel>
-              )}
-            </ReactFlow>
-          </ReactFlowProvider><NodeModal
-              isOpen={!!selectedNode}
-              onClose={() => setSelectedNode(null)}
-              node={selectedNode}
-              onSave={(updatedNode: Node) => {
-                setNodes((nds) => nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
-                );
-                setSelectedNode(null);
-              } } /></>
-    )}
+            )}
+          </ReactFlow>
+        </ReactFlowProvider><NodeModal
+            isOpen={!!selectedNode}
+            onClose={() => setSelectedNode(null)}
+            node={selectedNode}
+            onSave={(updatedNode: Node) => {
+              setNodes((nds) => nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
+              );
+              setSelectedNode(null);
+            }} /></>
+      )}
     </div>
   );
 };

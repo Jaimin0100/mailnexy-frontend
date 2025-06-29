@@ -18,7 +18,7 @@ interface CustomNodeData {
 
 const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected, id  }) => {
 
-  const displayName = data.label || data.type;
+
   // Modern, minimal node styles inspired by Snov.io
   const nodeStyles = {
     start: {
@@ -131,6 +131,7 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected, id  }
 
   // Use fallback style for unknown types
   const currentStyle = nodeStyles[data.type as keyof typeof nodeStyles] || defaultStyle;
+  const displayName = data.label || currentStyle.name;
   
   const isConditionNode = data.type === 'condition';
   const isStartNode = data.type === 'start';
