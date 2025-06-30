@@ -1,5 +1,6 @@
 'use client';
 
+
 import Modal from 'react-modal';
 import { useForm, FormProvider } from 'react-hook-form';
 import { Node } from 'reactflow';
@@ -9,7 +10,6 @@ import DelayNode from './DelayNode';
 import GoalNode from './GoalNode';
 import ABTestNode from './ABTestNode';
 
-// Modal.setAppElement('#__next');
 
 interface NodeModalProps {
   isOpen: boolean;
@@ -19,6 +19,7 @@ interface NodeModalProps {
 }
 
 export default function NodeModal({ isOpen, onClose, node, onSave }: NodeModalProps) {
+
   const methods = useForm({
     defaultValues: node?.data || {},
   });
@@ -49,6 +50,7 @@ export default function NodeModal({ isOpen, onClose, node, onSave }: NodeModalPr
     <Modal
       isOpen={isOpen}
       onRequestClose={onClose}
+      appElement={document.getElementById('__next') || document.body}
       className="p-6 bg-white rounded-lg shadow-lg max-w-md mx-auto mt-20 z-[1000] border border-gray-200 backdrop-blur-sm"
       overlayClassName="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-start z-[999]"
       style={{

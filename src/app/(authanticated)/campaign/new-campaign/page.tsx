@@ -145,7 +145,7 @@ export default function CreateCampaignPage() {
             {currentStep === 1 && (
               <div className="flex relative">
                 <div className="flex-1">
-                  <WorkflowCanvas campaignId={selectedCampaign.id} campaign={selectedCampaign} campaignName={newCampaignName} onSaveSuccess={(savedCampaign) => { setSelectedCampaign(savedCampaign); }}/>
+                  <WorkflowCanvas campaignId={selectedCampaign.id}  campaignName={selectedCampaign.name || newCampaignName} onSaveSuccess={(savedCampaign) => { setSelectedCampaign(savedCampaign); }}/>
                 </div>
                 <div className="ml-4">
                   <NodeSidebar />

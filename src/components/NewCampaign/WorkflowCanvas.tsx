@@ -54,7 +54,7 @@ const initialEdges: Edge[] = [];
 const MULTI_OUTPUT_NODES = ['condition', 'abTest'];
 const AUTO_SAVE_INTERVAL = 60000; // 60 seconds
 
-const WorkflowCanvas = ({ campaignId: propCampaignId, campaign: propCampaign, campaignName, onSaveSuccess }: WorkflowCanvasProps) => {
+const WorkflowCanvas = ({ campaignId: propCampaignId, campaignName, onSaveSuccess }: WorkflowCanvasProps) => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes] = useNodesState(initialNodes);
   const [edges, setEdges] = useEdgesState(initialEdges);
@@ -76,7 +76,8 @@ const WorkflowCanvas = ({ campaignId: propCampaignId, campaign: propCampaign, ca
   useEffect(() => {
     const fetchCampaign = async () => {
       try {
-        if (propCampaignId) {
+        console.log('propCampaignId:', propCampaignId, 'type:', typeof propCampaignId);
+        if (propCampaignId && !String(propCampaignId).startsWith("draft-")) {
           const flowResponse = await campaignAPI.getCampaignFlow(propCampaignId);
           const flowData = flowResponse.data;
           console.log('Fetched flow data:', flowData);
@@ -93,8 +94,10 @@ const WorkflowCanvas = ({ campaignId: propCampaignId, campaign: propCampaign, ca
             const nodes = flowData.nodes || initialNodes;
             const edges = flowData.edges || initialEdges;
 
-            setNodes(nodes);
-            setEdges(edges);
+            // setNodes(nodes);
+            // setEdges(edges);
+            setNodes(flowData.nodes || initialNodes);
+            setEdges(flowData.edges || initialEdges);
             setLastSavedNodes([...nodes]);
             setLastSavedEdges([...edges]);
           } else {
@@ -108,8 +111,8 @@ const WorkflowCanvas = ({ campaignId: propCampaignId, campaign: propCampaign, ca
           // New campaign
           setNodes(initialNodes);
           setEdges(initialEdges);
-          setWorkflowName("Untitled Workflow");
-          setLastSavedName("Untitled Workflow");
+          setWorkflowName(campaignName || "Untitled Workflow");
+          setLastSavedName(campaignName || "Untitled Workflow");
         }
       } catch (error) {
         console.error('Failed to load campaign:', error);
@@ -122,7 +125,7 @@ const WorkflowCanvas = ({ campaignId: propCampaignId, campaign: propCampaign, ca
     };
 
     fetchCampaign();
-  }, [campaignId]); // Only run when campaignId changes
+  }, [propCampaignId, campaignId]); // Only run when campaignId changes
 
   // Auto-save effect
   useEffect(() => {
@@ -157,20 +160,20 @@ const WorkflowCanvas = ({ campaignId: propCampaignId, campaign: propCampaign, ca
     try {
       let response;
 
-      if (propCampaign?.id && !propCampaign.id.startsWith("draft-")) {
+      if (campaignId && !campaignId.startsWith("draft-")) {
         // Update existing campaign
-        response = await campaignAPI.updateCampaign(propCampaign.id, {...flowData,name: workflowName });
+        response = await campaignAPI.updateCampaign(campaignId, { name: workflowName, flow: flowData, });
         // if (workflowName !== lastSavedName) {
         //   await campaignAPI.updateCampaign(propCampaignId, { name: workflowName, status: 'draft' });
         // }
       } else {
         // Create new campaign
-        const response = await campaignAPI.createCampaign({
+        response = await campaignAPI.createCampaign({
           name: workflowName,
-          ...flowData,
+          flow: flowData,
           status: 'draft'
         });
-        propCampaignId = response.data.id;
+        // propCampaignId = response.data.id;
         setCampaignId(response.data.id);
       }
       onSaveSuccess(response.data);
@@ -269,34 +272,36 @@ const WorkflowCanvas = ({ campaignId: propCampaignId, campaign: propCampaign, ca
     // };
 
     // Inside prepareFlowData function:
-  return {
-    nodes: nodes.map(node => {
-      const allowedKeys = nodeDataWhitelist[node.type] || ['label'];
-      const filteredData = Object.keys(node.data)
-        .filter(key => allowedKeys.includes(key))
-        .reduce((obj, key) => {
-          obj[key] = node.data[key];
-          return obj;
-        }, {} as Record<string, any>);
+    return {
+      nodes: nodes.map(node => {
+        const allowedKeys = nodeDataWhitelist[node.type] || ['label'];
+        const filteredData = Object.keys(node.data)
+          .filter(key => allowedKeys.includes(key))
+          .reduce((obj, key) => {
+            obj[key] = node.data[key];
+            return obj;
+          }, {} as Record<string, any>);
 
-      return {
-        id: node.id,
-        type: node.type,
-        position: node.position,
-        data: filteredData
-      };
-    }),
-    edges: edges.map(edge => ({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      condition: edge.condition || ""
-    })),
-    meta: {
-      savedAt: new Date().toISOString(),
-      version: '1.0'
-    }
-  };
+        return {
+          id: node.id,
+          type: node.type,
+          position: node.position,
+          data: filteredData
+        };
+      }),
+      edges: edges.map(edge => ({
+        id: edge.id,
+        source: edge.source,
+        sourceHandle: edge.sourceHandle,
+        target: edge.target,
+        targetHandle: edge.targetHandle,
+        condition: edge.condition || ""
+      })),
+      meta: {
+        savedAt: new Date().toISOString(),
+        version: '1.0'
+      }
+    };
   };
 
   const onInit = useCallback((instance: any) => {
@@ -310,13 +315,31 @@ const WorkflowCanvas = ({ campaignId: propCampaignId, campaign: propCampaign, ca
         const sourceNode = nodes.find(n => n.id === params.source);
         const isMultiOutputNode = sourceNode && MULTI_OUTPUT_NODES.includes(sourceNode.data.type);
 
-        if (!isMultiOutputNode) {
+        if (params.sourceHandle) {
+          const hasExistingEdgeFromHandle = eds.some(
+            e => e.source === params.source && e.sourceHandle === params.sourceHandle
+          );
+          if (hasExistingEdgeFromHandle) {
+            alert("This handle already has an outgoing connection!");
+            return eds;
+          }
+        } else if (!isMultiOutputNode) {
+          // For non-multi-output nodes, check if there's any outgoing edge
           const hasExistingOutgoingEdge = eds.some(e => e.source === params.source);
           if (hasExistingOutgoingEdge) {
             alert("This node can only have one outgoing connection!");
             return eds;
           }
         }
+
+
+        // if (!isMultiOutputNode) {
+        //   const hasExistingOutgoingEdge = eds.some(e => e.source === params.source);
+        //   if (hasExistingOutgoingEdge) {
+        //     alert("This node can only have one outgoing connection!");
+        //     return eds;
+        //   }
+        // }
 
         const connectionExists = eds.some(
           (e) => e.source === params.source && e.target === params.target
@@ -369,9 +392,9 @@ const WorkflowCanvas = ({ campaignId: propCampaignId, campaign: propCampaign, ca
         position,
         data: {
           ...(type === 'email' && { subject: '', body: '' }),
-          ...(type === 'condition' && { 
+          ...(type === 'condition' && {
             openedEmailEnabled: true,
-            clickedLinkEnabled: true 
+            clickedLinkEnabled: true
           }),
           label: label || type,
           type,
