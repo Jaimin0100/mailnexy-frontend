@@ -1,5 +1,5 @@
 import { useFormContext } from "react-hook-form";
-import { useState, useRef } from "react";
+import {  useState, useRef, useEffect } from "react";
 import {
   FaPlus,
   FaBold,
@@ -28,7 +28,7 @@ import {
 import { MdFormatColorText, MdFormatColorFill } from "react-icons/md";
 
 export default function EmailNode() {
-  const { register, setValue } = useFormContext();
+  const { register, setValue, watch } = useFormContext();
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
   const [linkText, setLinkText] = useState("");
@@ -36,6 +36,14 @@ export default function EmailNode() {
   const [textColor, setTextColor] = useState("#000000");
   const [bgColor, setBgColor] = useState("#ffffff");
   const textareaRef = useRef(null);
+  const bodyValue = watch("body"); // Watch the body field
+
+  // Set initial content of contentEditable div
+  useEffect(() => {
+    if (textareaRef.current && bodyValue) {
+      textareaRef.current.innerHTML = bodyValue;
+    }
+  }, []);
 
   const handleFormat = (command, value = null) => {
     document.execCommand(command, false, value);
@@ -219,14 +227,14 @@ export default function EmailNode() {
                 </div>
               )}
             </div>
-            <button
+            <input
               type="button"
               className="text-gray-600 hover:bg-gray-200 p-2 rounded"
               title="Background Color"
               onClick={() => handleFormat("hiliteColor", bgColor)}
-            >
-              <MdFormatColorFill className="w-4 h-4" />
-            </button>
+            />
+              {/* <MdFormatColorFill className="w-4 h-4" />
+            </button> */}
 
             {/* Formatting */}
             <div className="border-l border-gray-300 h-6 mx-1"></div>
@@ -280,7 +288,7 @@ export default function EmailNode() {
             <div
               ref={textareaRef}
               contentEditable
-              onInput={(e) => setValue("body", e.target.innerHTML, { shouldValidate: true })}
+              onInput={(e) => setValue("body", e.currentTarget.innerHTML, { shouldValidate: true })}
               placeholder="Enter a description..."
               className="w-full text-black border border-gray-300 rounded-b-lg rounded-t-none p-3 h-60 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y overflow-auto"
               dangerouslySetInnerHTML={{ __html: "" }}

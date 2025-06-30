@@ -16,7 +16,7 @@ interface CustomNodeData {
   onDelete?: (id: string) => void;
 }
 
-const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected, id  }) => {
+const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected, id, type  }) => {
 
 
   // Modern, minimal node styles inspired by Snov.io
@@ -130,13 +130,13 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected, id  }
   };
 
   // Use fallback style for unknown types
-  const currentStyle = nodeStyles[data.type as keyof typeof nodeStyles] || defaultStyle;
+  const currentStyle = nodeStyles[type as keyof typeof nodeStyles] || defaultStyle;
   const displayName = data.label || currentStyle.name;
   
-  const isConditionNode = data.type === 'condition';
-  const isStartNode = data.type === 'start';
-  const isGoalNode = data.type === 'goal';
-  const isABTestNode = data.type === 'abTest';
+  const isConditionNode = type === 'condition';
+  const isStartNode = type === 'start';
+  const isGoalNode = type === 'goal';
+  const isABTestNode = type === 'abTest';
 
   return (
     <div

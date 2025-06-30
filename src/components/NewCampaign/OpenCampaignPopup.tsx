@@ -48,7 +48,7 @@ export default function OpenCampaignPopup({
                 >
                   <h3 className="font-medium text-[#53545C]">{campaign.name}</h3>
                   <p className="text-sm text-gray-500 mt-1">
-                    Created: {new Date(campaign.CreatedAt).toLocaleDateString()}
+                    Created: {new Date(campaign.created_at).toLocaleDateString()}
                   </p>
                 </div>
               ))}

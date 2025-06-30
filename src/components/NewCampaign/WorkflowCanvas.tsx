@@ -59,7 +59,7 @@ const WorkflowCanvas = ({ campaignId: propCampaignId, campaignName, onSaveSucces
   const [nodes, setNodes] = useNodesState(initialNodes);
   const [edges, setEdges] = useEdgesState(initialEdges);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [workflowName, setWorkflowName] = useState(campaignName);
+  const [workflowName, setWorkflowName] = useState(campaignName || 'Untitled Workflow');
   const [rfInstance, setRfInstance] = useState<any>(null);
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationLog, setSimulationLog] = useState<string[]>([]);
@@ -86,8 +86,28 @@ const WorkflowCanvas = ({ campaignId: propCampaignId, campaignName, onSaveSucces
           const campaignData = campaignResponse.data;
           console.log('Fetched campaign data:', campaignData);
 
-          setWorkflowName(campaignData.name || 'Untitled Workflow');
-          setLastSavedName(campaignData.name || 'Untitled Workflow');
+          setWorkflowName(campaignData.name || campaignName || 'Untitled Workflow');
+          setLastSavedName(campaignData.name || campaignName || 'Untitled Workflow');
+
+          // Map nodes to include onDelete
+          const nodesWithDelete = (flowData.nodes || initialNodes).map(node => ({
+            ...node,
+            data: {
+              ...node.data,
+              onDelete: (nodeId: string) => {
+                if (confirm('Are you sure you want to delete this node?')) {
+                  setNodes((nds) => nds.filter((n) => n.id !== nodeId));
+                  setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId));
+                }
+              }
+            }
+          }));
+
+          setNodes(nodesWithDelete);
+          setEdges(flowData.edges || initialEdges);
+          setLastSavedNodes([...nodesWithDelete]);
+          setLastSavedEdges([...(flowData.edges || initialEdges)]);
+          setLastSaved(new Date().toLocaleTimeString());
 
           // Initialize nodes and edges from the campaign data
           if (flowData) {
@@ -98,8 +118,10 @@ const WorkflowCanvas = ({ campaignId: propCampaignId, campaignName, onSaveSucces
             // setEdges(edges);
             setNodes(flowData.nodes || initialNodes);
             setEdges(flowData.edges || initialEdges);
-            setLastSavedNodes([...nodes]);
-            setLastSavedEdges([...edges]);
+            // setLastSavedNodes([...nodes]);
+            // setLastSavedEdges([...edges]);
+            setLastSavedNodes([...flowData.nodes]);
+            setLastSavedEdges([...flowData.edges]);
           } else {
             // If no flow data, initialize with default nodes
             setNodes(initialNodes);
@@ -119,6 +141,7 @@ const WorkflowCanvas = ({ campaignId: propCampaignId, campaignName, onSaveSucces
         // Fallback to initial state
         setNodes(initialNodes);
         setEdges(initialEdges);
+        setWorkflowName(campaignName || 'Untitled Workflow');
       } finally {
         setIsLoading(false);
       }
@@ -160,12 +183,12 @@ const WorkflowCanvas = ({ campaignId: propCampaignId, campaignName, onSaveSucces
     try {
       let response;
 
-      if (campaignId && !campaignId.startsWith("draft-")) {
+      if (propCampaignId && !propCampaignId.startsWith("draft-")) {
         // Update existing campaign
-        response = await campaignAPI.updateCampaign(campaignId, { name: workflowName, flow: flowData, });
-        // if (workflowName !== lastSavedName) {
-        //   await campaignAPI.updateCampaign(propCampaignId, { name: workflowName, status: 'draft' });
-        // }
+        response = await campaignAPI.updateCampaign(propCampaignId, { name: workflowName, flow: flowData, });
+        if (workflowName !== lastSavedName) {
+          await campaignAPI.updateCampaign(propCampaignId, { name: workflowName, status: 'draft' });
+        }
       } else {
         // Create new campaign
         response = await campaignAPI.createCampaign({
@@ -417,13 +440,13 @@ const WorkflowCanvas = ({ campaignId: propCampaignId, campaignName, onSaveSucces
     const nodeIds = new Set(nodes.map(n => n.id));
 
     nodes.forEach(node => {
-      if (node.data.type !== 'start' && !edges.some(e => e.target === node.id)) {
+      if (node.type !== 'start' && !edges.some(e => e.target === node.id)) {
         errors.push(`Node "${node.data.label}" has no incoming connections`);
       }
     });
 
     nodes.forEach(node => {
-      if (node.data.type !== 'goal' && !edges.some(e => e.source === node.id)) {
+      if (node.type !== 'goal' && !edges.some(e => e.source === node.id)) {
         errors.push(`Node "${node.data.label}" has no outgoing connections`);
       }
     });

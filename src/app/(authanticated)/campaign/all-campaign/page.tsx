@@ -254,12 +254,12 @@ export default function AllCampaign() {
   
         const data = await response.json();
         console.log("API Response:", data);
-        setCampaigns(data);
+        // setCampaigns(data);
         // Map the data to ensure 'id' exists
-        const mappedData = data.map((campaign: { ID: any; name: any; CreatedAt: any; status: any; sent_count: any; open_count: any; click_count: any; reply_count: any; bounce_count: any; }) => ({
-          id: campaign.ID, // Adjust '_id' to match your API's property
+        const mappedData = data.map((campaign: any ) => ({
+          id: campaign.id, // Adjust '_id' to match your API's property
           name: campaign.name,
-          created_at: campaign.CreatedAt,
+          created_at: campaign.created_at,
           status: campaign.status,
           sent_count: campaign.sent_count,
           open_count: campaign.open_count,
@@ -513,6 +513,7 @@ export default function AllCampaign() {
                     <td className="p-5">
                       <div className="relative w-12 h-12">
                         <div
+                          key={`sent-${campaign.id}`}
                           className="absolute inset-0 rounded-full bg-gray-100 shadow-sm"
                           style={{
                             background: `conic-gradient(#8b5cf6 ${getPercentage(campaign.sent_count, 200)}%, #e5e7eb ${getPercentage(campaign.sent_count, 200)}%)`,
@@ -526,6 +527,7 @@ export default function AllCampaign() {
                     <td className="p-5">
                       <div className="relative w-12 h-12">
                         <div
+                          key={`open-${campaign.id}`}
                           className="absolute inset-0 rounded-full bg-gray-100 shadow-sm"
                           style={{
                             background: `conic-gradient(#22c55e ${getPercentage(campaign.open_count, 200)}%, #e5e7eb ${getPercentage(campaign.open_count, 200)}%)`,
@@ -539,6 +541,7 @@ export default function AllCampaign() {
                     <td className="p-5">
                       <div className="relative w-12 h-12">
                         <div
+                          key={`click-${campaign.id}`} 
                           className="absolute inset-0 rounded-full bg-gray-100 shadow-sm"
                           style={{
                             background: `conic-gradient(#eab308 ${getPercentage(campaign.click_count, 200)}%, #e5e7eb ${getPercentage(campaign.click_count, 200)}%)`,
@@ -552,6 +555,7 @@ export default function AllCampaign() {
                     <td className="p-5">
                       <div className="relative w-12 h-12">
                         <div
+                          key={`reply-${campaign.id}`} 
                           className="absolute inset-0 rounded-full bg-gray-100 shadow-sm"
                           style={{
                             background: `conic-gradient(#3b82f6 ${getPercentage(campaign.reply_count, 200)}%, #e5e7eb ${getPercentage(campaign.reply_count, 200)}%)`,
@@ -565,6 +569,7 @@ export default function AllCampaign() {
                     <td className="p-5">
                       <div className="relative w-12 h-12">
                         <div
+                          key={`bounce-${campaign.id}`}
                           className="absolute inset-0 rounded-full bg-gray-100 shadow-sm"
                           style={{
                             background: `conic-gradient(#ef4444 ${getPercentage(campaign.bounce_count, 200)}%, #e5e7eb ${getPercentage(campaign.bounce_count, 200)}%)`,
@@ -578,6 +583,7 @@ export default function AllCampaign() {
                     <td className="p-5">
                       <div className="relative w-12 h-12">
                         <div
+                          key={`interested-${campaign.id}`}
                           className="absolute inset-0 rounded-full bg-gray-100 shadow-sm"
                           style={{
                             background: `conic-gradient(#3b82f6 ${getPercentage(campaign.interested_count, 200)}%, #e5e7eb ${getPercentage(campaign.interested_count, 200)}%)`,
