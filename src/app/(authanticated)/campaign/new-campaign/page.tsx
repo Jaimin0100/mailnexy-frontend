@@ -54,50 +54,6 @@ export default function CreateCampaignPage() {
     });
   }
 
-  // const handleCreateCampaign = async (name: string) => {
-  //   try {
-  //     const response = await campaignAPI.createCampaign({
-  //       name,
-  //       description: "", // Add empty description
-  //       lead_list_ids: [], // Add empty array for lead lists
-  //       status: "draft",
-  //       flow: {
-  //         nodes: [
-  //           {
-  //             id: "1",
-  //             type: "custom",
-  //             position: { x: 250, y: 5 },
-  //             data: { label: "Start", 
-  //                     type: "start",
-  //                     subject: "",
-  //                     body: "",
-  //                     templateID: null,
-  //                     conditionType: "",
-  //                     matchValue: "",
-  //                     delayAmount: 0,
-  //                     delayUnit: "",
-  //                     goalType: "" },
-  //           }
-  //         ],
-  //         edges: []
-  //       },
-  //     });
-  //     if (response.status >= 400) {
-  //       console.error("Backend error:", response.data);
-  //       alert(`Error: ${response.data.error || 'Failed to create campaign'}`);
-  //       return;
-  //     }
-  //     setSelectedCampaign(response.data.campaign);
-  //     setShowPopup(false);
-  //   } catch (error) {
-  //     console.error("Failed to create campaign", error);
-  //     if (error.response) {
-  //       alert(`Error: ${error.response.data.error || error.message}`);
-  //     } else {
-  //       alert("Failed to create campaign. Please check console for details.");
-  //     }
-  //   }
-  // };
 
   return (
     <div className="min-h-screen pt-4 bg-[#F5F7FA] flex flex-col">
